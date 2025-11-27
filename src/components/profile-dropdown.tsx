@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import useDialogState from '@/hooks/use-dialog-state'
+import { useAuthStore } from '@/stores/auth-store'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
@@ -16,6 +17,20 @@ import { SignOutDialog } from '@/components/sign-out-dialog'
 
 export function ProfileDropdown() {
   const [open, setOpen] = useDialogState()
+  const { auth } = useAuthStore()
+
+  // Obtener las iniciales del email del usuario
+  const getInitials = (email: string) => {
+    const parts = email.split('@')[0].split('.')
+    if (parts.length >= 2) {
+      return `${parts[0][0]}${parts[1][0]}`.toUpperCase()
+    }
+    return email.substring(0, 2).toUpperCase()
+  }
+
+  const userEmail = auth.user?.email || 'user@example.com'
+  const institution = auth.user.institution
+  const userInitials = getInitials(institution.name)
 
   return (
     <>
@@ -23,17 +38,17 @@ export function ProfileDropdown() {
         <DropdownMenuTrigger asChild>
           <Button variant='ghost' className='relative h-8 w-8 rounded-full'>
             <Avatar className='h-8 w-8'>
-              <AvatarImage src='/avatars/01.png' alt='@shadcn' />
-              <AvatarFallback>SN</AvatarFallback>
+              <AvatarImage src={institution.logoUrl} alt={userEmail} />
+              <AvatarFallback>{userInitials}</AvatarFallback>
             </Avatar>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className='w-56' align='end' forceMount>
           <DropdownMenuLabel className='font-normal'>
             <div className='flex flex-col gap-1.5'>
-              <p className='text-sm leading-none font-medium'>satnaing</p>
+              <p className='text-sm leading-none font-medium capitalize'>{institution?.name}</p>
               <p className='text-muted-foreground text-xs leading-none'>
-                satnaingdev@gmail.com
+                {userEmail}
               </p>
             </div>
           </DropdownMenuLabel>

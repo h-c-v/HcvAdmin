@@ -22,7 +22,7 @@ export function Users() {
       <Header fixed>
         <Search />
         <div className='ms-auto flex items-center space-x-4'>
-          <ThemeSwitch />
+          {/* <ThemeSwitch /> */}
           <ConfigDrawer />
           <ProfileDropdown />
         </div>

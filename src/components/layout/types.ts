@@ -1,4 +1,5 @@
 import { type LinkProps } from '@tanstack/react-router'
+import { type UserRole } from '@/lib/permissions'
 
 type User = {
   name: string
@@ -16,6 +17,7 @@ type BaseNavItem = {
   title: string
   badge?: string
   icon?: React.ElementType
+  allowedRoles?: UserRole[] // Roles that can see this item
 }
 
 type NavLink = BaseNavItem & {
@@ -24,7 +26,7 @@ type NavLink = BaseNavItem & {
 }
 
 type NavCollapsible = BaseNavItem & {
-  items: (BaseNavItem & { url: LinkProps['to'] | (string & {}) })[]
+  items: (BaseNavItem & { url: LinkProps['to'] | (string & {}); allowedRoles?: UserRole[] })[]
   url?: never
 }
 

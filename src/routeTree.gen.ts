@@ -25,20 +25,32 @@ import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-p
 import { Route as ClerkAuthenticatedRouteRouteImport } from './routes/clerk/_authenticated/route'
 import { Route as ClerkauthRouteRouteImport } from './routes/clerk/(auth)/route'
 import { Route as AuthenticatedSettingsRouteRouteImport } from './routes/_authenticated/settings/route'
+import { Route as AuthenticatedWorkshopsIndexRouteImport } from './routes/_authenticated/workshops/index'
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
 import { Route as AuthenticatedTasksIndexRouteImport } from './routes/_authenticated/tasks/index'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
 import { Route as AuthenticatedHelpCenterIndexRouteImport } from './routes/_authenticated/help-center/index'
+import { Route as AuthenticatedCustomersIndexRouteImport } from './routes/_authenticated/customers/index'
 import { Route as AuthenticatedChatsIndexRouteImport } from './routes/_authenticated/chats/index'
 import { Route as AuthenticatedAppsIndexRouteImport } from './routes/_authenticated/apps/index'
+import { Route as AuthenticatedAllVehiclesIndexRouteImport } from './routes/_authenticated/all-vehicles/index'
+import { Route as AuthenticatedAllServicesIndexRouteImport } from './routes/_authenticated/all-services/index'
+import { Route as AuthenticatedAllClientsIndexRouteImport } from './routes/_authenticated/all-clients/index'
 import { Route as ClerkAuthenticatedUserManagementRouteImport } from './routes/clerk/_authenticated/user-management'
 import { Route as ClerkauthSignUpRouteImport } from './routes/clerk/(auth)/sign-up'
 import { Route as ClerkauthSignInRouteImport } from './routes/clerk/(auth)/sign-in'
+import { Route as AuthenticatedVehiclesNewServiceRouteImport } from './routes/_authenticated/vehicles/new-service'
+import { Route as AuthenticatedVehiclesVehicleIdRouteImport } from './routes/_authenticated/vehicles/$vehicleId'
 import { Route as AuthenticatedSettingsNotificationsRouteImport } from './routes/_authenticated/settings/notifications'
 import { Route as AuthenticatedSettingsDisplayRouteImport } from './routes/_authenticated/settings/display'
 import { Route as AuthenticatedSettingsAppearanceRouteImport } from './routes/_authenticated/settings/appearance'
 import { Route as AuthenticatedSettingsAccountRouteImport } from './routes/_authenticated/settings/account'
+import { Route as AuthenticatedErrorsUnauthorizedRouteImport } from './routes/_authenticated/errors/unauthorized'
 import { Route as AuthenticatedErrorsErrorRouteImport } from './routes/_authenticated/errors/$error'
+import { Route as AuthenticatedCustomersCustomerIdRouteImport } from './routes/_authenticated/customers/$customerId'
+import { Route as AuthenticatedVehiclesVehicleIdNewServiceRouteImport } from './routes/_authenticated/vehicles/$vehicleId/new-service'
+import { Route as AuthenticatedCustomersCustomerIdClientsRouteImport } from './routes/_authenticated/customers/$customerId/clients'
+import { Route as AuthenticatedCustomersCustomerIdClientsClientIdRouteImport } from './routes/_authenticated/customers/$customerId/clients/$clientId'
 
 const ClerkRouteRoute = ClerkRouteRouteImport.update({
   id: '/clerk',
@@ -118,6 +130,12 @@ const AuthenticatedSettingsRouteRoute =
     path: '/settings',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedWorkshopsIndexRoute =
+  AuthenticatedWorkshopsIndexRouteImport.update({
+    id: '/workshops/',
+    path: '/workshops/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedUsersIndexRoute = AuthenticatedUsersIndexRouteImport.update({
   id: '/users/',
   path: '/users/',
@@ -140,6 +158,12 @@ const AuthenticatedHelpCenterIndexRoute =
     path: '/help-center/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedCustomersIndexRoute =
+  AuthenticatedCustomersIndexRouteImport.update({
+    id: '/customers/',
+    path: '/customers/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedChatsIndexRoute = AuthenticatedChatsIndexRouteImport.update({
   id: '/chats/',
   path: '/chats/',
@@ -150,6 +174,24 @@ const AuthenticatedAppsIndexRoute = AuthenticatedAppsIndexRouteImport.update({
   path: '/apps/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAllVehiclesIndexRoute =
+  AuthenticatedAllVehiclesIndexRouteImport.update({
+    id: '/all-vehicles/',
+    path: '/all-vehicles/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAllServicesIndexRoute =
+  AuthenticatedAllServicesIndexRouteImport.update({
+    id: '/all-services/',
+    path: '/all-services/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAllClientsIndexRoute =
+  AuthenticatedAllClientsIndexRouteImport.update({
+    id: '/all-clients/',
+    path: '/all-clients/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const ClerkAuthenticatedUserManagementRoute =
   ClerkAuthenticatedUserManagementRouteImport.update({
     id: '/user-management',
@@ -166,6 +208,18 @@ const ClerkauthSignInRoute = ClerkauthSignInRouteImport.update({
   path: '/sign-in',
   getParentRoute: () => ClerkauthRouteRoute,
 } as any)
+const AuthenticatedVehiclesNewServiceRoute =
+  AuthenticatedVehiclesNewServiceRouteImport.update({
+    id: '/vehicles/new-service',
+    path: '/vehicles/new-service',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedVehiclesVehicleIdRoute =
+  AuthenticatedVehiclesVehicleIdRouteImport.update({
+    id: '/vehicles/$vehicleId',
+    path: '/vehicles/$vehicleId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedSettingsNotificationsRoute =
   AuthenticatedSettingsNotificationsRouteImport.update({
     id: '/notifications',
@@ -190,11 +244,41 @@ const AuthenticatedSettingsAccountRoute =
     path: '/account',
     getParentRoute: () => AuthenticatedSettingsRouteRoute,
   } as any)
+const AuthenticatedErrorsUnauthorizedRoute =
+  AuthenticatedErrorsUnauthorizedRouteImport.update({
+    id: '/errors/unauthorized',
+    path: '/errors/unauthorized',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedErrorsErrorRoute =
   AuthenticatedErrorsErrorRouteImport.update({
     id: '/errors/$error',
     path: '/errors/$error',
     getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedCustomersCustomerIdRoute =
+  AuthenticatedCustomersCustomerIdRouteImport.update({
+    id: '/customers/$customerId',
+    path: '/customers/$customerId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedVehiclesVehicleIdNewServiceRoute =
+  AuthenticatedVehiclesVehicleIdNewServiceRouteImport.update({
+    id: '/new-service',
+    path: '/new-service',
+    getParentRoute: () => AuthenticatedVehiclesVehicleIdRoute,
+  } as any)
+const AuthenticatedCustomersCustomerIdClientsRoute =
+  AuthenticatedCustomersCustomerIdClientsRouteImport.update({
+    id: '/clients',
+    path: '/clients',
+    getParentRoute: () => AuthenticatedCustomersCustomerIdRoute,
+  } as any)
+const AuthenticatedCustomersCustomerIdClientsClientIdRoute =
+  AuthenticatedCustomersCustomerIdClientsClientIdRouteImport.update({
+    id: '/$clientId',
+    path: '/$clientId',
+    getParentRoute: () => AuthenticatedCustomersCustomerIdClientsRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -212,20 +296,32 @@ export interface FileRoutesByFullPath {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/': typeof AuthenticatedIndexRoute
+  '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteWithChildren
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
+  '/errors/unauthorized': typeof AuthenticatedErrorsUnauthorizedRoute
   '/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
+  '/vehicles/$vehicleId': typeof AuthenticatedVehiclesVehicleIdRouteWithChildren
+  '/vehicles/new-service': typeof AuthenticatedVehiclesNewServiceRoute
   '/clerk/sign-in': typeof ClerkauthSignInRoute
   '/clerk/sign-up': typeof ClerkauthSignUpRoute
   '/clerk/user-management': typeof ClerkAuthenticatedUserManagementRoute
+  '/all-clients': typeof AuthenticatedAllClientsIndexRoute
+  '/all-services': typeof AuthenticatedAllServicesIndexRoute
+  '/all-vehicles': typeof AuthenticatedAllVehiclesIndexRoute
   '/apps': typeof AuthenticatedAppsIndexRoute
   '/chats': typeof AuthenticatedChatsIndexRoute
+  '/customers': typeof AuthenticatedCustomersIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/tasks': typeof AuthenticatedTasksIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/workshops': typeof AuthenticatedWorkshopsIndexRoute
+  '/customers/$customerId/clients': typeof AuthenticatedCustomersCustomerIdClientsRouteWithChildren
+  '/vehicles/$vehicleId/new-service': typeof AuthenticatedVehiclesVehicleIdNewServiceRoute
+  '/customers/$customerId/clients/$clientId': typeof AuthenticatedCustomersCustomerIdClientsClientIdRoute
 }
 export interface FileRoutesByTo {
   '/clerk': typeof ClerkAuthenticatedRouteRouteWithChildren
@@ -240,20 +336,32 @@ export interface FileRoutesByTo {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/': typeof AuthenticatedIndexRoute
+  '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteWithChildren
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
+  '/errors/unauthorized': typeof AuthenticatedErrorsUnauthorizedRoute
   '/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
+  '/vehicles/$vehicleId': typeof AuthenticatedVehiclesVehicleIdRouteWithChildren
+  '/vehicles/new-service': typeof AuthenticatedVehiclesNewServiceRoute
   '/clerk/sign-in': typeof ClerkauthSignInRoute
   '/clerk/sign-up': typeof ClerkauthSignUpRoute
   '/clerk/user-management': typeof ClerkAuthenticatedUserManagementRoute
+  '/all-clients': typeof AuthenticatedAllClientsIndexRoute
+  '/all-services': typeof AuthenticatedAllServicesIndexRoute
+  '/all-vehicles': typeof AuthenticatedAllVehiclesIndexRoute
   '/apps': typeof AuthenticatedAppsIndexRoute
   '/chats': typeof AuthenticatedChatsIndexRoute
+  '/customers': typeof AuthenticatedCustomersIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/tasks': typeof AuthenticatedTasksIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/workshops': typeof AuthenticatedWorkshopsIndexRoute
+  '/customers/$customerId/clients': typeof AuthenticatedCustomersCustomerIdClientsRouteWithChildren
+  '/vehicles/$vehicleId/new-service': typeof AuthenticatedVehiclesVehicleIdNewServiceRoute
+  '/customers/$customerId/clients/$clientId': typeof AuthenticatedCustomersCustomerIdClientsClientIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -273,20 +381,32 @@ export interface FileRoutesById {
   '/(errors)/500': typeof errors500Route
   '/(errors)/503': typeof errors503Route
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteWithChildren
   '/_authenticated/errors/$error': typeof AuthenticatedErrorsErrorRoute
+  '/_authenticated/errors/unauthorized': typeof AuthenticatedErrorsUnauthorizedRoute
   '/_authenticated/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/_authenticated/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/_authenticated/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/_authenticated/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
+  '/_authenticated/vehicles/$vehicleId': typeof AuthenticatedVehiclesVehicleIdRouteWithChildren
+  '/_authenticated/vehicles/new-service': typeof AuthenticatedVehiclesNewServiceRoute
   '/clerk/(auth)/sign-in': typeof ClerkauthSignInRoute
   '/clerk/(auth)/sign-up': typeof ClerkauthSignUpRoute
   '/clerk/_authenticated/user-management': typeof ClerkAuthenticatedUserManagementRoute
+  '/_authenticated/all-clients/': typeof AuthenticatedAllClientsIndexRoute
+  '/_authenticated/all-services/': typeof AuthenticatedAllServicesIndexRoute
+  '/_authenticated/all-vehicles/': typeof AuthenticatedAllVehiclesIndexRoute
   '/_authenticated/apps/': typeof AuthenticatedAppsIndexRoute
   '/_authenticated/chats/': typeof AuthenticatedChatsIndexRoute
+  '/_authenticated/customers/': typeof AuthenticatedCustomersIndexRoute
   '/_authenticated/help-center/': typeof AuthenticatedHelpCenterIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/tasks/': typeof AuthenticatedTasksIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
+  '/_authenticated/workshops/': typeof AuthenticatedWorkshopsIndexRoute
+  '/_authenticated/customers/$customerId/clients': typeof AuthenticatedCustomersCustomerIdClientsRouteWithChildren
+  '/_authenticated/vehicles/$vehicleId/new-service': typeof AuthenticatedVehiclesVehicleIdNewServiceRoute
+  '/_authenticated/customers/$customerId/clients/$clientId': typeof AuthenticatedCustomersCustomerIdClientsClientIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -305,20 +425,32 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/'
+    | '/customers/$customerId'
     | '/errors/$error'
+    | '/errors/unauthorized'
     | '/settings/account'
     | '/settings/appearance'
     | '/settings/display'
     | '/settings/notifications'
+    | '/vehicles/$vehicleId'
+    | '/vehicles/new-service'
     | '/clerk/sign-in'
     | '/clerk/sign-up'
     | '/clerk/user-management'
+    | '/all-clients'
+    | '/all-services'
+    | '/all-vehicles'
     | '/apps'
     | '/chats'
+    | '/customers'
     | '/help-center'
     | '/settings/'
     | '/tasks'
     | '/users'
+    | '/workshops'
+    | '/customers/$customerId/clients'
+    | '/vehicles/$vehicleId/new-service'
+    | '/customers/$customerId/clients/$clientId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/clerk'
@@ -333,20 +465,32 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/'
+    | '/customers/$customerId'
     | '/errors/$error'
+    | '/errors/unauthorized'
     | '/settings/account'
     | '/settings/appearance'
     | '/settings/display'
     | '/settings/notifications'
+    | '/vehicles/$vehicleId'
+    | '/vehicles/new-service'
     | '/clerk/sign-in'
     | '/clerk/sign-up'
     | '/clerk/user-management'
+    | '/all-clients'
+    | '/all-services'
+    | '/all-vehicles'
     | '/apps'
     | '/chats'
+    | '/customers'
     | '/help-center'
     | '/settings'
     | '/tasks'
     | '/users'
+    | '/workshops'
+    | '/customers/$customerId/clients'
+    | '/vehicles/$vehicleId/new-service'
+    | '/customers/$customerId/clients/$clientId'
   id:
     | '__root__'
     | '/_authenticated'
@@ -365,20 +509,32 @@ export interface FileRouteTypes {
     | '/(errors)/500'
     | '/(errors)/503'
     | '/_authenticated/'
+    | '/_authenticated/customers/$customerId'
     | '/_authenticated/errors/$error'
+    | '/_authenticated/errors/unauthorized'
     | '/_authenticated/settings/account'
     | '/_authenticated/settings/appearance'
     | '/_authenticated/settings/display'
     | '/_authenticated/settings/notifications'
+    | '/_authenticated/vehicles/$vehicleId'
+    | '/_authenticated/vehicles/new-service'
     | '/clerk/(auth)/sign-in'
     | '/clerk/(auth)/sign-up'
     | '/clerk/_authenticated/user-management'
+    | '/_authenticated/all-clients/'
+    | '/_authenticated/all-services/'
+    | '/_authenticated/all-vehicles/'
     | '/_authenticated/apps/'
     | '/_authenticated/chats/'
+    | '/_authenticated/customers/'
     | '/_authenticated/help-center/'
     | '/_authenticated/settings/'
     | '/_authenticated/tasks/'
     | '/_authenticated/users/'
+    | '/_authenticated/workshops/'
+    | '/_authenticated/customers/$customerId/clients'
+    | '/_authenticated/vehicles/$vehicleId/new-service'
+    | '/_authenticated/customers/$customerId/clients/$clientId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -510,6 +666,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/workshops/': {
+      id: '/_authenticated/workshops/'
+      path: '/workshops'
+      fullPath: '/workshops'
+      preLoaderRoute: typeof AuthenticatedWorkshopsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/users/': {
       id: '/_authenticated/users/'
       path: '/users'
@@ -538,6 +701,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHelpCenterIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/customers/': {
+      id: '/_authenticated/customers/'
+      path: '/customers'
+      fullPath: '/customers'
+      preLoaderRoute: typeof AuthenticatedCustomersIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/chats/': {
       id: '/_authenticated/chats/'
       path: '/chats'
@@ -550,6 +720,27 @@ declare module '@tanstack/react-router' {
       path: '/apps'
       fullPath: '/apps'
       preLoaderRoute: typeof AuthenticatedAppsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/all-vehicles/': {
+      id: '/_authenticated/all-vehicles/'
+      path: '/all-vehicles'
+      fullPath: '/all-vehicles'
+      preLoaderRoute: typeof AuthenticatedAllVehiclesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/all-services/': {
+      id: '/_authenticated/all-services/'
+      path: '/all-services'
+      fullPath: '/all-services'
+      preLoaderRoute: typeof AuthenticatedAllServicesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/all-clients/': {
+      id: '/_authenticated/all-clients/'
+      path: '/all-clients'
+      fullPath: '/all-clients'
+      preLoaderRoute: typeof AuthenticatedAllClientsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/clerk/_authenticated/user-management': {
@@ -572,6 +763,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/clerk/sign-in'
       preLoaderRoute: typeof ClerkauthSignInRouteImport
       parentRoute: typeof ClerkauthRouteRoute
+    }
+    '/_authenticated/vehicles/new-service': {
+      id: '/_authenticated/vehicles/new-service'
+      path: '/vehicles/new-service'
+      fullPath: '/vehicles/new-service'
+      preLoaderRoute: typeof AuthenticatedVehiclesNewServiceRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/vehicles/$vehicleId': {
+      id: '/_authenticated/vehicles/$vehicleId'
+      path: '/vehicles/$vehicleId'
+      fullPath: '/vehicles/$vehicleId'
+      preLoaderRoute: typeof AuthenticatedVehiclesVehicleIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/settings/notifications': {
       id: '/_authenticated/settings/notifications'
@@ -601,12 +806,47 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsAccountRouteImport
       parentRoute: typeof AuthenticatedSettingsRouteRoute
     }
+    '/_authenticated/errors/unauthorized': {
+      id: '/_authenticated/errors/unauthorized'
+      path: '/errors/unauthorized'
+      fullPath: '/errors/unauthorized'
+      preLoaderRoute: typeof AuthenticatedErrorsUnauthorizedRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/errors/$error': {
       id: '/_authenticated/errors/$error'
       path: '/errors/$error'
       fullPath: '/errors/$error'
       preLoaderRoute: typeof AuthenticatedErrorsErrorRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/customers/$customerId': {
+      id: '/_authenticated/customers/$customerId'
+      path: '/customers/$customerId'
+      fullPath: '/customers/$customerId'
+      preLoaderRoute: typeof AuthenticatedCustomersCustomerIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/vehicles/$vehicleId/new-service': {
+      id: '/_authenticated/vehicles/$vehicleId/new-service'
+      path: '/new-service'
+      fullPath: '/vehicles/$vehicleId/new-service'
+      preLoaderRoute: typeof AuthenticatedVehiclesVehicleIdNewServiceRouteImport
+      parentRoute: typeof AuthenticatedVehiclesVehicleIdRoute
+    }
+    '/_authenticated/customers/$customerId/clients': {
+      id: '/_authenticated/customers/$customerId/clients'
+      path: '/clients'
+      fullPath: '/customers/$customerId/clients'
+      preLoaderRoute: typeof AuthenticatedCustomersCustomerIdClientsRouteImport
+      parentRoute: typeof AuthenticatedCustomersCustomerIdRoute
+    }
+    '/_authenticated/customers/$customerId/clients/$clientId': {
+      id: '/_authenticated/customers/$customerId/clients/$clientId'
+      path: '/$clientId'
+      fullPath: '/customers/$customerId/clients/$clientId'
+      preLoaderRoute: typeof AuthenticatedCustomersCustomerIdClientsClientIdRouteImport
+      parentRoute: typeof AuthenticatedCustomersCustomerIdClientsRoute
     }
   }
 }
@@ -634,26 +874,91 @@ const AuthenticatedSettingsRouteRouteWithChildren =
     AuthenticatedSettingsRouteRouteChildren,
   )
 
+interface AuthenticatedCustomersCustomerIdClientsRouteChildren {
+  AuthenticatedCustomersCustomerIdClientsClientIdRoute: typeof AuthenticatedCustomersCustomerIdClientsClientIdRoute
+}
+
+const AuthenticatedCustomersCustomerIdClientsRouteChildren: AuthenticatedCustomersCustomerIdClientsRouteChildren =
+  {
+    AuthenticatedCustomersCustomerIdClientsClientIdRoute:
+      AuthenticatedCustomersCustomerIdClientsClientIdRoute,
+  }
+
+const AuthenticatedCustomersCustomerIdClientsRouteWithChildren =
+  AuthenticatedCustomersCustomerIdClientsRoute._addFileChildren(
+    AuthenticatedCustomersCustomerIdClientsRouteChildren,
+  )
+
+interface AuthenticatedCustomersCustomerIdRouteChildren {
+  AuthenticatedCustomersCustomerIdClientsRoute: typeof AuthenticatedCustomersCustomerIdClientsRouteWithChildren
+}
+
+const AuthenticatedCustomersCustomerIdRouteChildren: AuthenticatedCustomersCustomerIdRouteChildren =
+  {
+    AuthenticatedCustomersCustomerIdClientsRoute:
+      AuthenticatedCustomersCustomerIdClientsRouteWithChildren,
+  }
+
+const AuthenticatedCustomersCustomerIdRouteWithChildren =
+  AuthenticatedCustomersCustomerIdRoute._addFileChildren(
+    AuthenticatedCustomersCustomerIdRouteChildren,
+  )
+
+interface AuthenticatedVehiclesVehicleIdRouteChildren {
+  AuthenticatedVehiclesVehicleIdNewServiceRoute: typeof AuthenticatedVehiclesVehicleIdNewServiceRoute
+}
+
+const AuthenticatedVehiclesVehicleIdRouteChildren: AuthenticatedVehiclesVehicleIdRouteChildren =
+  {
+    AuthenticatedVehiclesVehicleIdNewServiceRoute:
+      AuthenticatedVehiclesVehicleIdNewServiceRoute,
+  }
+
+const AuthenticatedVehiclesVehicleIdRouteWithChildren =
+  AuthenticatedVehiclesVehicleIdRoute._addFileChildren(
+    AuthenticatedVehiclesVehicleIdRouteChildren,
+  )
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRouteRoute: typeof AuthenticatedSettingsRouteRouteWithChildren
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedCustomersCustomerIdRoute: typeof AuthenticatedCustomersCustomerIdRouteWithChildren
   AuthenticatedErrorsErrorRoute: typeof AuthenticatedErrorsErrorRoute
+  AuthenticatedErrorsUnauthorizedRoute: typeof AuthenticatedErrorsUnauthorizedRoute
+  AuthenticatedVehiclesVehicleIdRoute: typeof AuthenticatedVehiclesVehicleIdRouteWithChildren
+  AuthenticatedVehiclesNewServiceRoute: typeof AuthenticatedVehiclesNewServiceRoute
+  AuthenticatedAllClientsIndexRoute: typeof AuthenticatedAllClientsIndexRoute
+  AuthenticatedAllServicesIndexRoute: typeof AuthenticatedAllServicesIndexRoute
+  AuthenticatedAllVehiclesIndexRoute: typeof AuthenticatedAllVehiclesIndexRoute
   AuthenticatedAppsIndexRoute: typeof AuthenticatedAppsIndexRoute
   AuthenticatedChatsIndexRoute: typeof AuthenticatedChatsIndexRoute
+  AuthenticatedCustomersIndexRoute: typeof AuthenticatedCustomersIndexRoute
   AuthenticatedHelpCenterIndexRoute: typeof AuthenticatedHelpCenterIndexRoute
   AuthenticatedTasksIndexRoute: typeof AuthenticatedTasksIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
+  AuthenticatedWorkshopsIndexRoute: typeof AuthenticatedWorkshopsIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRouteRoute: AuthenticatedSettingsRouteRouteWithChildren,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedCustomersCustomerIdRoute:
+    AuthenticatedCustomersCustomerIdRouteWithChildren,
   AuthenticatedErrorsErrorRoute: AuthenticatedErrorsErrorRoute,
+  AuthenticatedErrorsUnauthorizedRoute: AuthenticatedErrorsUnauthorizedRoute,
+  AuthenticatedVehiclesVehicleIdRoute:
+    AuthenticatedVehiclesVehicleIdRouteWithChildren,
+  AuthenticatedVehiclesNewServiceRoute: AuthenticatedVehiclesNewServiceRoute,
+  AuthenticatedAllClientsIndexRoute: AuthenticatedAllClientsIndexRoute,
+  AuthenticatedAllServicesIndexRoute: AuthenticatedAllServicesIndexRoute,
+  AuthenticatedAllVehiclesIndexRoute: AuthenticatedAllVehiclesIndexRoute,
   AuthenticatedAppsIndexRoute: AuthenticatedAppsIndexRoute,
   AuthenticatedChatsIndexRoute: AuthenticatedChatsIndexRoute,
+  AuthenticatedCustomersIndexRoute: AuthenticatedCustomersIndexRoute,
   AuthenticatedHelpCenterIndexRoute: AuthenticatedHelpCenterIndexRoute,
   AuthenticatedTasksIndexRoute: AuthenticatedTasksIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
+  AuthenticatedWorkshopsIndexRoute: AuthenticatedWorkshopsIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

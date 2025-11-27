@@ -1,28 +1,18 @@
 import {
-  Construction,
   LayoutDashboard,
   Monitor,
-  Bug,
-  ListTodo,
-  FileX,
-  HelpCircle,
-  Lock,
   Bell,
-  Package,
   Palette,
-  ServerOff,
   Settings,
   Wrench,
   UserCog,
-  UserX,
   Users,
-  MessagesSquare,
-  ShieldCheck,
-  AudioWaveform,
   Command,
-  GalleryVerticalEnd,
+  Store,
+  Car,
+  Wrench as WrenchIcon,
+  Building2,
 } from 'lucide-react'
-import { ClerkLogo } from '@/assets/clerk-logo'
 import { type SidebarData } from '../types'
 
 export const sidebarData: SidebarData = {
@@ -33,20 +23,20 @@ export const sidebarData: SidebarData = {
   },
   teams: [
     {
-      name: 'Shadcn Admin',
+      name: 'Administrador',
       logo: Command,
-      plan: 'Vite + ShadcnUI',
+      plan: 'Pro',
     },
-    {
-      name: 'Acme Inc',
-      logo: GalleryVerticalEnd,
-      plan: 'Enterprise',
-    },
-    {
-      name: 'Acme Corp.',
-      logo: AudioWaveform,
-      plan: 'Startup',
-    },
+    // {
+    //   name: 'Acme Inc',
+    //   logo: GalleryVerticalEnd,
+    //   plan: 'Enterprise',
+    // },
+    // {
+    //   name: 'Acme Corp.',
+    //   logo: AudioWaveform,
+    //   plan: 'Startup',
+    // },
   ],
   navGroups: [
     {
@@ -56,148 +46,79 @@ export const sidebarData: SidebarData = {
           title: 'Dashboard',
           url: '/',
           icon: LayoutDashboard,
+          allowedRoles: ['admin', 'manager'],
         },
         {
-          title: 'Tasks',
-          url: '/tasks',
-          icon: ListTodo,
+          title: 'Proveedores',
+          url: '/customers',
+          icon: UserCog,
+          allowedRoles: ['admin'], // Solo admin
         },
         {
-          title: 'Apps',
-          url: '/apps',
-          icon: Package,
+          title: 'Talleres',
+          url: '/workshops',
+          icon: Store,
+          allowedRoles: ['admin', 'manager'], // Admin y manager
         },
         {
-          title: 'Chats',
-          url: '/chats',
-          badge: '3',
-          icon: MessagesSquare,
-        },
-        {
-          title: 'Users',
-          url: '/users',
+          title: 'Clientes',
+          url: '/all-clients',
           icon: Users,
+          allowedRoles: ['admin', 'manager'], // Admin y manager
         },
         {
-          title: 'Secured by Clerk',
-          icon: ClerkLogo,
-          items: [
-            {
-              title: 'Sign In',
-              url: '/clerk/sign-in',
-            },
-            {
-              title: 'Sign Up',
-              url: '/clerk/sign-up',
-            },
-            {
-              title: 'User Management',
-              url: '/clerk/user-management',
-            },
-          ],
+          title: 'Vehículos',
+          url: '/all-vehicles',
+          icon: Car,
+          allowedRoles: ['admin', 'manager'], // Admin y manager
+        },
+        {
+          title: 'Servicios',
+          url: '/all-services',
+          icon: WrenchIcon,
+          allowedRoles: ['admin', 'manager'], // Admin y manager
         },
       ],
     },
     {
-      title: 'Pages',
+      title: 'Configuración',
       items: [
         {
-          title: 'Auth',
-          icon: ShieldCheck,
-          items: [
-            {
-              title: 'Sign In',
-              url: '/sign-in',
-            },
-            {
-              title: 'Sign In (2 Col)',
-              url: '/sign-in-2',
-            },
-            {
-              title: 'Sign Up',
-              url: '/sign-up',
-            },
-            {
-              title: 'Forgot Password',
-              url: '/forgot-password',
-            },
-            {
-              title: 'OTP',
-              url: '/otp',
-            },
-          ],
-        },
-        {
-          title: 'Errors',
-          icon: Bug,
-          items: [
-            {
-              title: 'Unauthorized',
-              url: '/errors/unauthorized',
-              icon: Lock,
-            },
-            {
-              title: 'Forbidden',
-              url: '/errors/forbidden',
-              icon: UserX,
-            },
-            {
-              title: 'Not Found',
-              url: '/errors/not-found',
-              icon: FileX,
-            },
-            {
-              title: 'Internal Server Error',
-              url: '/errors/internal-server-error',
-              icon: ServerOff,
-            },
-            {
-              title: 'Maintenance Error',
-              url: '/errors/maintenance-error',
-              icon: Construction,
-            },
-          ],
-        },
-      ],
-    },
-    {
-      title: 'Other',
-      items: [
-        {
-          title: 'Settings',
+          title: 'Configuración',
           icon: Settings,
+          allowedRoles: ['admin', 'manager'],
           items: [
             {
-              title: 'Profile',
+              title: 'Perfil',
               url: '/settings',
-              icon: UserCog,
+              icon: Building2,
+              allowedRoles: ['admin', 'manager'],
             },
             {
-              title: 'Account',
+              title: 'Cuenta',
               url: '/settings/account',
               icon: Wrench,
+              allowedRoles: ['admin', 'manager'],
             },
             {
-              title: 'Appearance',
+              title: 'Apariencia',
               url: '/settings/appearance',
               icon: Palette,
+              allowedRoles: ['admin', 'manager'],
             },
             {
-              title: 'Notifications',
+              title: 'Notificaciones',
               url: '/settings/notifications',
               icon: Bell,
+              allowedRoles: ['admin', 'manager'],
             },
             {
-              title: 'Display',
+              title: 'Pantalla',
               url: '/settings/display',
               icon: Monitor,
+              allowedRoles: ['admin', 'manager'],
             },
           ],
-        },
-        {
-          title: 'Help Center',
-          url: '/help-center',
-          icon: HelpCircle,
         },
       ],
     },

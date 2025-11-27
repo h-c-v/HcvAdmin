@@ -19,4 +19,15 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  optimizeDeps: {
+    include: ['@apollo/client', '@apollo/client/react'],
+    esbuildOptions: {
+      target: 'esnext',
+    },
+  },
+  build: {
+    commonjsOptions: {
+      include: [/@apollo\/client/],
+    },
+  },
 })

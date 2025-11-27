@@ -87,7 +87,7 @@ export function Apps() {
       <Header>
         <Search />
         <div className='ms-auto flex items-center gap-4'>
-          <ThemeSwitch />
+          {/* <ThemeSwitch /> */}
           <ConfigDrawer />
           <ProfileDropdown />
         </div>
