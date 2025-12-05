@@ -2,7 +2,7 @@ import { type ColumnDef } from '@tanstack/react-table'
 import { Checkbox } from '@/components/ui/checkbox'
 import { DataTableColumnHeader } from '@/components/data-table'
 import { Badge } from '@/components/ui/badge'
-import { Customer } from '@/types'
+import { type Customer } from '@/types'
 import { DataTableRowActions } from './data-table-row-actions'
 import { format } from 'date-fns'
 
@@ -33,12 +33,12 @@ export const customersColumns: ColumnDef<Customer>[] = [
     },
   },
   {
-    accessorKey: 'firstName',
+    accessorKey: 'names',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Nombre' />
     ),
     cell: ({ row }) => (
-      <div className='font-medium'>{row.getValue('firstName')}</div>
+      <div className='font-medium'>{row.getValue('names')}</div>
     ),
   },
   {
@@ -63,20 +63,21 @@ export const customersColumns: ColumnDef<Customer>[] = [
     cell: ({ row }) => <div className='lowercase'>{row.getValue('email')}</div>,
   },
   {
-    accessorKey: 'status',
+    accessorKey: 'roles',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Estado' />
+      <DataTableColumnHeader column={column} title='Roles' />
     ),
     cell: ({ row }) => {
-      const status = row.getValue('status') as string
+      const roles = row.getValue('roles') as string[]
       return (
-        <Badge variant={status === 'active' ? 'default' : 'secondary'}>
-          {status === 'active' ? 'Activo' : 'Inactivo'}
-        </Badge>
+        <div className='flex gap-1'>
+          {roles.map((role) => (
+            <Badge key={role} variant='outline'>
+              {role}
+            </Badge>
+          ))}
+        </div>
       )
-    },
-    filterFn: (row, id, value) => {
-      return Array.isArray(value) && value.includes(row.getValue(id))
     },
   },
   {
@@ -86,7 +87,8 @@ export const customersColumns: ColumnDef<Customer>[] = [
     ),
     cell: ({ row }) => {
       const date = row.getValue('createdAt') as string
-      return <div>{format(new Date(date), 'dd/MM/yyyy')}</div>
+      const timestamp = !isNaN(Number(date)) ? Number(date) : date
+      return <div>{format(new Date(timestamp), 'dd/MM/yyyy')}</div>
     },
   },
   {

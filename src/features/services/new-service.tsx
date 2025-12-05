@@ -3,6 +3,9 @@ import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { useNavigate, useSearch } from '@tanstack/react-router'
+import { useMutation, useQuery } from '@apollo/client/react'
+import { toast } from 'sonner'
+import { Loader2, Check, ChevronsUpDown } from 'lucide-react'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
@@ -26,12 +29,28 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import { IconPlus, IconTrash, IconArrowLeft, IconX } from '@tabler/icons-react'
-import { commonServiceTypes, serviceStatusLabels, getVehicleFullName, getClientFullName } from '@/types'
-import { mockVehicles, mockClients } from '@/data/mock-data'
+import { commonServiceTypes, serviceStatusLabels } from '@/types'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
+import { cn } from '@/lib/utils'
+import { CREATE_SERVICE, type CreateServiceInput, type CreateServiceResponse } from '@/graphql/services'
+import { GET_VEHICLES, type GetVehiclesResponse } from '@/graphql/vehicles'
+import { GET_WORKSHOPS, type GetWorkshopsResponse } from '@/graphql/workshops'
 
 const servicePartSchema = z.object({
   partName: z.string().min(1, 'El nombre de la parte es requerido'),
@@ -52,7 +71,7 @@ const serviceSchema = z.object({
   technicianName: z.string().min(1, 'El nombre del técnico es requerido'),
   nextServiceDate: z.string().optional(),
   nextServiceMileage: z.coerce.number().optional(),
-  status: z.enum(['completed', 'pending', 'in_progress', 'cancelled']),
+  status: z.enum(['COMPLETED', 'PENDING', 'IN_PROGRESS', 'CANCELLED']),
   notes: z.string().optional(),
 })
 
@@ -62,9 +81,8 @@ export default function NewServicePage() {
   const navigate = useNavigate()
   const searchParams = useSearch({ from: '/_authenticated/vehicles/new-service' }) as { vehicleId?: string }
   const [selectedVehicleId, setSelectedVehicleId] = useState<string>(searchParams?.vehicleId || '')
-
-  // TODO: Fetch vehicle data using GraphQL
-  const vehicle = mockVehicles.find(v => v.id === selectedVehicleId)
+  const [openWorkshopCombobox, setOpenWorkshopCombobox] = useState(false)
+  const [openVehicleCombobox, setOpenVehicleCombobox] = useState(false)
 
   const form = useForm<ServiceFormValues>({
     resolver: zodResolver(serviceSchema),
@@ -80,10 +98,39 @@ export default function NewServicePage() {
       technicianName: '',
       nextServiceDate: '',
       nextServiceMileage: 0,
-      status: 'completed',
+      status: 'IN_PROGRESS',
       notes: '',
     },
   })
+
+  // Query para obtener talleres
+  const { data: workshopsData, loading: loadingWorkshops } = useQuery<GetWorkshopsResponse>(
+    GET_WORKSHOPS
+  )
+
+  // Query para obtener vehículos
+  const { data: vehiclesData, loading: loadingVehicles } = useQuery<GetVehiclesResponse>(
+    GET_VEHICLES
+  )
+
+  const workshops = workshopsData?.workshops || []
+  const vehicles = vehiclesData?.vehicles || []
+  const vehicle = vehicles.find(v => v.id === selectedVehicleId)
+
+  // Mutation para crear servicio
+  const [createService, { loading: creatingService }] = useMutation<CreateServiceResponse, { input: CreateServiceInput }>(
+    CREATE_SERVICE,
+    {
+      onCompleted: () => {
+        toast.success('Servicio registrado exitosamente')
+        navigate({ to: '/all-services' })
+      },
+      onError: (error) => {
+        console.error('Error creating service:', error)
+        toast.error(`Error al registrar el servicio: ${error.message}`)
+      },
+    }
+  )
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
@@ -94,35 +141,43 @@ export default function NewServicePage() {
   const laborCost = form.watch('laborCost')
 
   const totalCost = parts.reduce((sum, part) => {
-    return sum + (part.quantity * part.unitPrice)
-  }, 0) + laborCost
+    const quantity = Number(part.quantity) || 0
+    const unitPrice = Number(part.unitPrice) || 0
+    return sum + (quantity * unitPrice)
+  }, 0) + (Number(laborCost) || 0)
 
   useEffect(() => {
     if (vehicle) {
-      form.setValue('mileage', vehicle.currentMileage)
+      form.setValue('mileage', vehicle.mileage)
     }
   }, [vehicle, form])
 
   const onSubmit = async (data: ServiceFormValues) => {
-    console.log('Creating service:', {
-      ...data,
-      totalCost
+    await createService({
+      variables: {
+        input: {
+          workshopId: data.workshopId,
+          vehicleId: data.vehicleId,
+          serviceDate: data.serviceDate,
+          serviceTypes: data.serviceTypes,
+          description: data.description,
+          parts: data.parts.map(part => ({
+            partName: part.partName,
+            partCode: part.partCode,
+            quantity: part.quantity,
+            unitPrice: part.unitPrice,
+          })),
+          laborCost: data.laborCost,
+          mileage: data.mileage,
+          technicianName: data.technicianName,
+          nextServiceDate: data.nextServiceDate || undefined,
+          nextServiceMileage: data.nextServiceMileage || undefined,
+          status: data.status,
+          notes: data.notes,
+        },
+      },
     })
-    // TODO: Implement GraphQL mutation with workshopId and vehicleId
-
-    // Navigate back to vehicle details or services list after successful creation
-    if (data.vehicleId) {
-      navigate({ to: `/vehicles/${data.vehicleId}` })
-    } else {
-      navigate({ to: '/all-services' })
-    }
   }
-
-  // TODO: Fetch real data from API
-  const mockWorkshops = [
-    { id: '1', name: 'Taller Mecánico Central' },
-    { id: '2', name: 'Lubricentro Express' },
-  ]
 
   const [customType, setCustomType] = useState('')
 
@@ -151,9 +206,9 @@ export default function NewServicePage() {
   const handleVehicleChange = (vehicleId: string) => {
     setSelectedVehicleId(vehicleId)
     form.setValue('vehicleId', vehicleId)
-    const selectedVehicle = mockVehicles.find(v => v.id === vehicleId)
+    const selectedVehicle = vehicles.find(v => v.id === vehicleId)
     if (selectedVehicle) {
-      form.setValue('mileage', selectedVehicle.currentMileage)
+      form.setValue('mileage', selectedVehicle.mileage)
     }
   }
 
@@ -204,7 +259,7 @@ export default function NewServicePage() {
               Nuevo Servicio
             </h2>
             <p className='text-muted-foreground'>
-              {vehicle ? `${getVehicleFullName(vehicle)} • ${vehicle.license}` : 'Selecciona un vehículo para comenzar'}
+              {vehicle ? `${vehicle.vehicleBrand.name} ${vehicle.vehicleModel.name} ${vehicle.year} • ${vehicle.license}` : 'Selecciona un vehículo para comenzar'}
             </p>
           </div>
         </div>
@@ -220,65 +275,139 @@ export default function NewServicePage() {
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
                 <div className='grid grid-cols-2 gap-4'>
+                  {/* Taller - Combobox */}
                   <FormField
                     control={form.control}
                     name='workshopId'
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className='flex flex-col'>
                         <FormLabel>Taller *</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder='Seleccionar taller' />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {mockWorkshops.map((workshop) => (
-                              <SelectItem key={workshop.id} value={workshop.id}>
-                                {workshop.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <Popover open={openWorkshopCombobox} onOpenChange={setOpenWorkshopCombobox}>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant='outline'
+                                role='combobox'
+                                className={cn(
+                                  'justify-between',
+                                  !field.value && 'text-muted-foreground'
+                                )}
+                                disabled={loadingWorkshops}
+                              >
+                                {loadingWorkshops
+                                  ? 'Cargando...'
+                                  : field.value
+                                  ? workshops.find((workshop) => workshop.id === field.value)?.name
+                                  : 'Seleccionar taller'}
+                                <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className='w-[400px] p-0'>
+                            <Command>
+                              <CommandInput placeholder='Buscar taller...' />
+                              <CommandList>
+                                <CommandEmpty>No se encontró ningún taller.</CommandEmpty>
+                                <CommandGroup>
+                                  {workshops.map((workshop) => (
+                                    <CommandItem
+                                      value={workshop.name}
+                                      key={workshop.id}
+                                      onSelect={() => {
+                                        form.setValue('workshopId', workshop.id)
+                                        setOpenWorkshopCombobox(false)
+                                      }}
+                                    >
+                                      <Check
+                                        className={cn(
+                                          'mr-2 h-4 w-4',
+                                          workshop.id === field.value
+                                            ? 'opacity-100'
+                                            : 'opacity-0'
+                                        )}
+                                      />
+                                      {workshop.name}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
 
+                  {/* Vehículo - Combobox */}
                   <FormField
                     control={form.control}
                     name='vehicleId'
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className='flex flex-col'>
                         <FormLabel>Vehículo *</FormLabel>
-                        <Select
-                          onValueChange={handleVehicleChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder='Seleccionar vehículo' />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {mockVehicles.map((vehicle) => {
-                              const client = mockClients.find(c => c.id === vehicle.clientId)
-                              return (
-                                <SelectItem key={vehicle.id} value={vehicle.id}>
-                                  <div className='flex flex-col'>
-                                    <span className='font-medium'>{getVehicleFullName(vehicle)}</span>
-                                    <span className='text-xs text-muted-foreground'>
-                                      {vehicle.license} • {client ? getClientFullName(client) : 'N/A'}
-                                    </span>
-                                  </div>
-                                </SelectItem>
-                              )
-                            })}
-                          </SelectContent>
-                        </Select>
+                        <Popover open={openVehicleCombobox} onOpenChange={setOpenVehicleCombobox}>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant='outline'
+                                role='combobox'
+                                className={cn(
+                                  'justify-between',
+                                  !field.value && 'text-muted-foreground'
+                                )}
+                                disabled={loadingVehicles}
+                              >
+                                {loadingVehicles
+                                  ? 'Cargando...'
+                                  : field.value
+                                  ? (() => {
+                                      const v = vehicles.find((vehicle) => vehicle.id === field.value)
+                                      return v ? `${v.vehicleBrand.name} ${v.vehicleModel.name} • ${v.license}` : 'Seleccionar vehículo'
+                                    })()
+                                  : 'Seleccionar vehículo'}
+                                <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className='w-[400px] p-0'>
+                            <Command>
+                              <CommandInput placeholder='Buscar vehículo por patente...' />
+                              <CommandList>
+                                <CommandEmpty>No se encontró ningún vehículo.</CommandEmpty>
+                                <CommandGroup>
+                                  {vehicles.map((vehicle) => (
+                                    <CommandItem
+                                      value={`${vehicle.license} ${vehicle.vehicleBrand.name} ${vehicle.vehicleModel.name}`}
+                                      key={vehicle.id}
+                                      onSelect={() => {
+                                        handleVehicleChange(vehicle.id)
+                                        setOpenVehicleCombobox(false)
+                                      }}
+                                    >
+                                      <Check
+                                        className={cn(
+                                          'mr-2 h-4 w-4',
+                                          vehicle.id === field.value
+                                            ? 'opacity-100'
+                                            : 'opacity-0'
+                                        )}
+                                      />
+                                      <div className='flex flex-col'>
+                                        <span className='font-medium'>
+                                          {vehicle.vehicleBrand.name} {vehicle.vehicleModel.name} {vehicle.year}
+                                        </span>
+                                        <span className='text-xs text-muted-foreground'>
+                                          {vehicle.license}
+                                        </span>
+                                      </div>
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -551,7 +680,17 @@ export default function NewServicePage() {
                       <FormItem>
                         <FormLabel>Costo de Mano de Obra *</FormLabel>
                         <FormControl>
-                          <Input type='number' step='0.01' placeholder='0.00' {...field} />
+                          <Input
+                            type='number'
+                            step='0.01'
+                            placeholder='0.00'
+                            {...field}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault()
+                              }
+                            }}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -618,10 +757,12 @@ export default function NewServicePage() {
                     type='button'
                     variant='outline'
                     onClick={() => navigate({ to: '/all-services' })}
+                    disabled={creatingService}
                   >
                     Cancelar
                   </Button>
-                  <Button type='submit'>
+                  <Button type='submit' disabled={creatingService || loadingWorkshops || loadingVehicles}>
+                    {creatingService && <Loader2 className='animate-spin' />}
                     Registrar Servicio
                   </Button>
                 </div>

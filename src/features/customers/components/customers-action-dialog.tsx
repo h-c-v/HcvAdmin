@@ -2,6 +2,9 @@ import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
+import { useMutation } from '@apollo/client/react'
+import { toast } from 'sonner'
+import { Loader2 } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -20,22 +23,18 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { useCustomers } from './customers-provider'
+import { CREATE_USER, type RegisterInput, type CreateUserResponse } from '@/graphql/mutations'
+import { GET_CUSTOMERS } from '@/graphql/customers'
 
 const customerSchema = z.object({
-  firstName: z.string().min(1, 'El nombre es requerido'),
+  names: z.string().min(1, 'El nombre es requerido'),
   lastName: z.string().min(1, 'El apellido es requerido'),
   email: z.string().email('Email inválido'),
   password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
-  phone: z.string().min(1, 'El teléfono es requerido'),
-  status: z.enum(['active', 'inactive'] as const),
+  documentId: z.string().min(1, 'El documento de identidad es requerido'),
+  phone: z.string().optional(),
+  photoUrl: z.string().optional(),
 })
 
 type CustomerFormValues = z.infer<typeof customerSchema>
@@ -47,46 +46,78 @@ export function CustomersActionDialog() {
   const form = useForm<CustomerFormValues>({
     resolver: zodResolver(customerSchema),
     defaultValues: {
-      firstName: '',
+      names: '',
       lastName: '',
       email: '',
       password: '',
+      documentId: '',
       phone: '',
-      status: 'active',
+      photoUrl: '',
     },
   })
+
+  const [createUser, { loading }] = useMutation<CreateUserResponse, { input: RegisterInput }>(
+    CREATE_USER,
+    {
+      refetchQueries: [
+        {
+          query: GET_CUSTOMERS,
+          variables: {
+            filter: { roles: ['MANAGER'] }
+          }
+        }
+      ],
+      onCompleted: (data) => {
+        toast.success('Gerente de taller creado exitosamente')
+        handleClose()
+      },
+      onError: (error) => {
+        console.error('Error creating user:', error)
+        toast.error(`Error al crear el gerente: ${error.message}`)
+      },
+    }
+  )
 
   useEffect(() => {
     if (currentCustomer && isEditing) {
       form.reset({
-        firstName: currentCustomer.firstName,
+        names: currentCustomer.names,
         lastName: currentCustomer.lastName,
         email: currentCustomer.email,
-        password: currentCustomer.password,
-        phone: currentCustomer.phone,
-        status: currentCustomer.status,
+        password: '',
+        documentId: '',
+        phone: currentCustomer.phone || '',
+        photoUrl: '',
       })
     } else {
       form.reset({
-        firstName: '',
+        names: '',
         lastName: '',
         email: '',
         password: '',
+        documentId: '',
         phone: '',
-        status: 'active',
+        photoUrl: '',
       })
     }
   }, [currentCustomer, isEditing, form])
 
   const onSubmit = async (data: CustomerFormValues) => {
-    console.log('Submitting customer:', data)
-    // TODO: Implement GraphQL mutation
-    // if (isEditing) {
-    //   await updateCustomer({ id: currentCustomer!.id, ...data })
-    // } else {
-    //   await createCustomer(data)
-    // }
-    handleClose()
+    if (isEditing) {
+      // TODO: Implement update mutation
+      toast.info('Edición de usuarios aún no implementada')
+      return
+    }
+
+    // Crear nuevo usuario con rol MANAGER
+    await createUser({
+      variables: {
+        input: {
+          ...data,
+          roles: ['MANAGER'],
+        },
+      },
+    })
   }
 
   const handleClose = () => {
@@ -113,7 +144,7 @@ export function CustomersActionDialog() {
             <div className='grid grid-cols-2 gap-4'>
               <FormField
                 control={form.control}
-                name='firstName'
+                name='names'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Nombre</FormLabel>
@@ -159,6 +190,20 @@ export function CustomersActionDialog() {
 
               <FormField
                 control={form.control}
+                name='documentId'
+                render={({ field }) => (
+                  <FormItem className='col-span-2'>
+                    <FormLabel>Documento de Identidad</FormLabel>
+                    <FormControl>
+                      <Input placeholder='Ej: 12345678' {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
                 name='password'
                 render={({ field }) => (
                   <FormItem>
@@ -180,7 +225,7 @@ export function CustomersActionDialog() {
                 name='phone'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Teléfono</FormLabel>
+                    <FormLabel>Teléfono (opcional)</FormLabel>
                     <FormControl>
                       <Input placeholder='Ej: +51 999 999 999' {...field} />
                     </FormControl>
@@ -191,24 +236,13 @@ export function CustomersActionDialog() {
 
               <FormField
                 control={form.control}
-                name='status'
+                name='photoUrl'
                 render={({ field }) => (
                   <FormItem className='col-span-2'>
-                    <FormLabel>Estado</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder='Seleccionar estado' />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value='active'>Activo</SelectItem>
-                        <SelectItem value='inactive'>Inactivo</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <FormLabel>URL de Foto (opcional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder='https://ejemplo.com/foto.jpg' {...field} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -216,11 +250,12 @@ export function CustomersActionDialog() {
             </div>
 
             <DialogFooter>
-              <Button type='button' variant='outline' onClick={handleClose}>
+              <Button type='button' variant='outline' onClick={handleClose} disabled={loading}>
                 Cancelar
               </Button>
-              <Button type='submit'>
-                {isEditing ? 'Actualizar' : 'Crear'}
+              <Button type='submit' disabled={loading}>
+                {loading && <Loader2 className='animate-spin' />}
+                {isEditing ? 'Actualizar' : 'Crear Gerente'}
               </Button>
             </DialogFooter>
           </form>

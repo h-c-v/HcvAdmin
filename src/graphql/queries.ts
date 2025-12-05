@@ -83,15 +83,3 @@ export const GET_MEMBER_BY_DNI = gql`
     }
   }
 `
-
-export const GET_INSTITUTION_PAYMENT_METHODS = gql`
-  query GetInstitutionPaymentMethods {
-    institutionPaymentMethods(activeOnly: true) {
-      id
-      paymentMethod {
-        id
-        name
-      }
-    }
-  }
-`

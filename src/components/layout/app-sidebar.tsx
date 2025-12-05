@@ -27,7 +27,7 @@ export function AppSidebar() {
     const userRoles = auth.user.role
 
     return sidebarData.navGroups
-      .map((group): NavGroupType => {
+    .map((group): NavGroupType => {
         const filteredItems = group.items
           .filter((item) => {
             // If no allowedRoles specified, show to everyone

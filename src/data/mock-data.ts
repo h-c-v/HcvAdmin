@@ -1,4 +1,4 @@
-import { Customer, Client, Vehicle, Service } from '@/types'
+import { type Customer, type Client, type Vehicle, type Service } from '@/types'
 
 // Mock Customers (Usuarios Propietarios)
 export const mockCustomers: Customer[] = [

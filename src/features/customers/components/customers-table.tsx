@@ -11,6 +11,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
+import { useQuery } from '@apollo/client/react'
 import { cn } from '@/lib/utils'
 import {
   Table,
@@ -22,8 +23,10 @@ import {
 } from '@/components/ui/table'
 import { DataTablePagination, DataTableToolbar } from '@/components/data-table'
 import { customersColumns } from './customers-columns'
-import { mockCustomers } from '@/data/mock-data'
 import { useNavigate } from '@tanstack/react-router'
+import { GET_CUSTOMERS } from '@/graphql/customers'
+import type { Customer } from '@/types'
+import { Loader2 } from 'lucide-react'
 
 export function CustomersTable() {
   const navigate = useNavigate()
@@ -32,8 +35,19 @@ export function CustomersTable() {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<any[]>([])
 
+  // Query para obtener usuarios con rol MANAGER
+  const { data, loading, error } = useQuery<{ users: Customer[] }>(GET_CUSTOMERS, {
+    variables: {
+      filter: {
+        roles: ['MANAGER']
+      }
+    }
+  })
+
+  const customers = data?.users || []
+
   const table = useReactTable({
-    data: mockCustomers,
+    data: customers,
     columns: customersColumns,
     state: {
       sorting,
@@ -54,22 +68,31 @@ export function CustomersTable() {
     getFacetedUniqueValues: getFacetedUniqueValues(),
   })
 
+  if (loading) {
+    return (
+      <div className='flex flex-1 items-center justify-center'>
+        <Loader2 className='h-8 w-8 animate-spin text-muted-foreground' />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className='flex flex-1 items-center justify-center'>
+        <p className='text-sm text-muted-foreground'>
+          Error al cargar los gerentes de taller: {error.message}
+        </p>
+      </div>
+    )
+  }
+
   return (
     <div className='flex flex-1 flex-col gap-4'>
       <DataTableToolbar
         table={table}
-        searchPlaceholder='Buscar talleres...'
-        searchKey='businessName'
-        filters={[
-          {
-            columnId: 'status',
-            title: 'Estado',
-            options: [
-              { label: 'Activo', value: 'active' },
-              { label: 'Inactivo', value: 'inactive' },
-            ],
-          },
-        ]}
+        searchPlaceholder='Buscar gerentes...'
+        searchKey='names'
+        filters={[]}
       />
       <div className='overflow-hidden rounded-md border'>
         <Table>
@@ -136,7 +159,7 @@ export function CustomersTable() {
                   colSpan={customersColumns.length}
                   className='h-24 text-center'
                 >
-                  No se encontraron talleres.
+                  No se encontraron gerentes de taller.
                 </TableCell>
               </TableRow>
             )}

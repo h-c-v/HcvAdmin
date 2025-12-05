@@ -2,6 +2,9 @@ import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
+import { useQuery, useMutation } from '@apollo/client/react'
+import { toast } from 'sonner'
+import { Loader2 } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -13,6 +16,7 @@ import {
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -27,17 +31,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
 import { useWorkshops } from './workshops-provider'
+import { GET_CUSTOMERS } from '@/graphql/customers'
+import {
+  CREATE_WORKSHOP,
+  GET_WORKSHOPS,
+  type CreateWorkshopInput,
+  type CreateWorkshopResponse,
+} from '@/graphql/workshops'
+import type { Customer } from '@/types'
 
 const workshopSchema = z.object({
-  customerId: z.string().min(1, 'El propietario es requerido'),
-  businessName: z.string().min(1, 'El nombre del negocio es requerido'),
-  taxId: z.string().optional(),
-  address: z.string().min(1, 'La dirección es requerida'),
-  phone: z.string().min(1, 'El teléfono es requerido'),
+  userId: z.string().min(1, 'El propietario es requerido'),
+  name: z.string().min(1, 'El nombre del taller es requerido'),
+  cuit: z.string().optional(),
+  manager: z.string().min(1, 'El nombre del encargado es requerido'),
   email: z.string().email('Email inválido'),
-  ownerName: z.string().min(1, 'El nombre del encargado es requerido'),
-  status: z.enum(['active', 'inactive'] as const),
+  phone: z.string().min(1, 'El teléfono es requerido'),
+  status: z.boolean(),
+  addressId: z.string().optional(),
 })
 
 type WorkshopFormValues = z.infer<typeof workshopSchema>
@@ -49,52 +62,79 @@ export function WorkshopsActionDialog() {
   const form = useForm<WorkshopFormValues>({
     resolver: zodResolver(workshopSchema),
     defaultValues: {
-      customerId: '',
-      businessName: '',
-      taxId: '',
-      address: '',
-      phone: '',
+      userId: '',
+      name: '',
+      cuit: '',
+      manager: '',
       email: '',
-      ownerName: '',
-      status: 'active',
+      phone: '',
+      status: true,
+      addressId: '',
+    },
+  })
+
+  const [createWorkshop, { loading: creatingWorkshop }] = useMutation<
+    CreateWorkshopResponse,
+    { input: CreateWorkshopInput }
+  >(CREATE_WORKSHOP, {
+    refetchQueries: [{ query: GET_WORKSHOPS }],
+    onCompleted: () => {
+      toast.success('Taller creado exitosamente')
+      handleClose()
+    },
+    onError: (error) => {
+      console.error('Error creating workshop:', error)
+      toast.error(`Error al crear el taller: ${error.message}`)
     },
   })
 
   useEffect(() => {
     if (currentWorkshop && isEditing) {
       form.reset({
-        customerId: currentWorkshop.customerId,
-        businessName: currentWorkshop.businessName,
-        taxId: currentWorkshop.taxId,
-        address: currentWorkshop.address,
-        phone: currentWorkshop.phone,
+        userId: currentWorkshop.userId || '',
+        name: currentWorkshop.name,
+        cuit: currentWorkshop.cuit || '',
+        manager: currentWorkshop.manager,
         email: currentWorkshop.email,
-        ownerName: currentWorkshop.ownerName,
+        phone: currentWorkshop.phone,
         status: currentWorkshop.status,
+        addressId: currentWorkshop.addressId || '',
       })
     } else {
       form.reset({
-        customerId: '',
-        businessName: '',
-        taxId: '',
-        address: '',
-        phone: '',
+        userId: '',
+        name: '',
+        cuit: '',
+        manager: '',
         email: '',
-        ownerName: '',
-        status: 'active',
+        phone: '',
+        status: true,
+        addressId: '',
       })
     }
   }, [currentWorkshop, isEditing, form])
 
   const onSubmit = async (data: WorkshopFormValues) => {
-    console.log('Submitting workshop:', data)
-    // TODO: Implement GraphQL mutation
-    // if (isEditing) {
-    //   await updateWorkshop({ id: currentWorkshop!.id, ...data })
-    // } else {
-    //   await createWorkshop(data)
-    // }
-    handleClose()
+    if (isEditing) {
+      // TODO: Implement update mutation
+      toast.info('Edición de talleres aún no implementada')
+      return
+    }
+
+    await createWorkshop({
+      variables: {
+        input: {
+          name: data.name,
+          cuit: data.cuit,
+          status: data.status,
+          manager: data.manager,
+          email: data.email,
+          phone: data.phone,
+          addressId: data.addressId,
+          userId: data.userId,
+        },
+      },
+    })
   }
 
   const handleClose = () => {
@@ -102,14 +142,24 @@ export function WorkshopsActionDialog() {
     form.reset()
   }
 
-  // TODO: Fetch customers list for select
-  const mockCustomers = [
-    { id: '1', name: 'Juan Pérez' },
-    { id: '2', name: 'María García' },
-  ]
+  // Obtener lista de usuarios con rol MANAGER (propietarios de talleres)
+  const { data: customersData, loading: loadingCustomers } = useQuery<{
+    users: Customer[]
+  }>(GET_CUSTOMERS, {
+    variables: {
+      filter: {
+        roles: ['MANAGER'],
+      },
+    },
+  })
+
+  const customers = customersData?.users || []
 
   return (
-    <Dialog open={open === 'create' || open === 'update'} onOpenChange={handleClose}>
+    <Dialog
+      open={open === 'create' || open === 'update'}
+      onOpenChange={handleClose}
+    >
       <DialogContent className='sm:max-w-[700px] max-h-[90vh] overflow-y-auto'>
         <DialogHeader>
           <DialogTitle>
@@ -127,24 +177,30 @@ export function WorkshopsActionDialog() {
             <div className='grid grid-cols-2 gap-4'>
               <FormField
                 control={form.control}
-                name='customerId'
+                name='userId'
                 render={({ field }) => (
                   <FormItem className='col-span-2'>
-                    <FormLabel>Usuario Propietario *</FormLabel>
+                    <FormLabel>Propietario (Gerente) *</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
-                      disabled={isEditing}
+                      disabled={isEditing || loadingCustomers}
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder='Seleccionar propietario' />
+                          <SelectValue
+                            placeholder={
+                              loadingCustomers
+                                ? 'Cargando...'
+                                : 'Seleccionar propietario'
+                            }
+                          />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {mockCustomers.map((customer) => (
+                        {customers.map((customer) => (
                           <SelectItem key={customer.id} value={customer.id}>
-                            {customer.name}
+                            {customer.names} {customer.lastName}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -156,10 +212,10 @@ export function WorkshopsActionDialog() {
 
               <FormField
                 control={form.control}
-                name='businessName'
+                name='name'
                 render={({ field }) => (
                   <FormItem className='col-span-2'>
-                    <FormLabel>Nombre del Negocio</FormLabel>
+                    <FormLabel>Nombre del Taller</FormLabel>
                     <FormControl>
                       <Input placeholder='Ej: Taller Mecánico XYZ' {...field} />
                     </FormControl>
@@ -170,10 +226,10 @@ export function WorkshopsActionDialog() {
 
               <FormField
                 control={form.control}
-                name='taxId'
+                name='cuit'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>CUIT</FormLabel>
+                    <FormLabel>CUIT (opcional)</FormLabel>
                     <FormControl>
                       <Input placeholder='Ej: 20-12345678-9' {...field} />
                     </FormControl>
@@ -186,30 +242,26 @@ export function WorkshopsActionDialog() {
                 control={form.control}
                 name='status'
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Estado</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder='Seleccionar estado' />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value='active'>Activo</SelectItem>
-                        <SelectItem value='inactive'>Inactivo</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
+                  <FormItem className='flex flex-row items-center justify-between rounded-lg border p-3'>
+                    <div className='space-y-0.5'>
+                      <FormLabel>Estado</FormLabel>
+                      <FormDescription>
+                        {field.value ? 'Activo' : 'Inactivo'}
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
                   </FormItem>
                 )}
               />
 
               <FormField
                 control={form.control}
-                name='ownerName'
+                name='manager'
                 render={({ field }) => (
                   <FormItem className='col-span-2'>
                     <FormLabel>Encargado / Responsable</FormLabel>
@@ -226,7 +278,7 @@ export function WorkshopsActionDialog() {
                 name='email'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email del Negocio</FormLabel>
+                    <FormLabel>Email del Taller</FormLabel>
                     <FormControl>
                       <Input
                         type='email'
@@ -255,16 +307,16 @@ export function WorkshopsActionDialog() {
 
               <FormField
                 control={form.control}
-                name='address'
+                name='addressId'
                 render={({ field }) => (
                   <FormItem className='col-span-2'>
-                    <FormLabel>Dirección Completa</FormLabel>
+                    <FormLabel>ID de Dirección (opcional)</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder='Ej: Av. Principal 123, Lima'
-                        {...field}
-                      />
+                      <Input placeholder='ID de la dirección' {...field} />
                     </FormControl>
+                    <FormDescription>
+                      Asocia este taller con una dirección existente
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -272,11 +324,17 @@ export function WorkshopsActionDialog() {
             </div>
 
             <DialogFooter>
-              <Button type='button' variant='outline' onClick={handleClose}>
+              <Button
+                type='button'
+                variant='outline'
+                onClick={handleClose}
+                disabled={creatingWorkshop}
+              >
                 Cancelar
               </Button>
-              <Button type='submit'>
-                {isEditing ? 'Actualizar' : 'Crear'}
+              <Button type='submit' disabled={creatingWorkshop}>
+                {creatingWorkshop && <Loader2 className='animate-spin' />}
+                {isEditing ? 'Actualizar' : 'Crear Taller'}
               </Button>
             </DialogFooter>
           </form>

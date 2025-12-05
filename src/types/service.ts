@@ -1,4 +1,4 @@
-export type ServiceStatus = 'completed' | 'pending' | 'in_progress' | 'cancelled'
+export type ServiceStatus = 'COMPLETED' | 'PENDING' | 'IN_PROGRESS' | 'CANCELLED'
 
 export interface ServicePart {
   id: string
@@ -19,10 +19,9 @@ export interface Service {
   description: string
   parts: ServicePart[]
   laborCost: number
-  totalCost: number
+  totalCost?: number
   mileage: number
   technicianName: string
-  photos?: string[]
   nextServiceDate?: string
   nextServiceMileage?: number
   status: ServiceStatus
@@ -48,7 +47,6 @@ export interface CreateServiceInput {
   laborCost: number
   mileage: number
   technicianName: string
-  photos?: string[]
   nextServiceDate?: string
   nextServiceMileage?: number
   status?: ServiceStatus
@@ -64,7 +62,6 @@ export interface UpdateServiceInput {
   laborCost?: number
   mileage?: number
   technicianName?: string
-  photos?: string[]
   nextServiceDate?: string
   nextServiceMileage?: number
   status?: ServiceStatus
@@ -73,10 +70,10 @@ export interface UpdateServiceInput {
 
 // Labels para estados de servicio
 export const serviceStatusLabels: Record<ServiceStatus, string> = {
-  completed: 'Completado',
-  pending: 'Pendiente',
-  in_progress: 'En Progreso',
-  cancelled: 'Cancelado',
+  COMPLETED: 'Completado',
+  PENDING: 'Pendiente',
+  IN_PROGRESS: 'En Progreso',
+  CANCELLED: 'Cancelado',
 }
 
 // Colores para badges de estado

@@ -1,37 +1,55 @@
-export type WorkshopStatus = 'active' | 'inactive'
+export interface Address {
+  id: string
+  street?: string
+  city?: string
+  state?: string
+  country?: string
+  zipCode?: string
+}
+
+export interface User {
+  id: string
+  names: string
+  lastName: string
+  email: string
+  roles: string[]
+}
 
 export interface Workshop {
   id: string
-  customerId: string // FK al Customer dueño del taller (requerido)
-  businessName: string
-  taxId: string // CUIT
-  address: string
-  phone: string
+  name: string
+  cuit: string
+  status: boolean
+  manager: string
   email: string
-  ownerName: string
-  status: WorkshopStatus
+  phone: string
+  addressId?: string
+  userId?: string
   createdAt: string
   updatedAt: string
+  address?: Address
+  user?: User
 }
 
 export interface CreateWorkshopInput {
-  customerId: string // Requerido: el taller debe pertenecer a un Customer
-  businessName: string
-  taxId?: string // Opcional
-  address: string
-  phone: string
+  name: string
+  cuit?: string
+  status?: boolean
+  manager: string
   email: string
-  ownerName: string
-  status?: WorkshopStatus
+  phone: string
+  addressId?: string
+  userId?: string
 }
 
 export interface UpdateWorkshopInput {
   id: string
-  businessName?: string
-  taxId?: string
-  address?: string
-  phone?: string
+  name?: string
+  cuit?: string
+  status?: boolean
+  manager?: string
   email?: string
-  ownerName?: string
-  status?: WorkshopStatus
+  phone?: string
+  addressId?: string
+  userId?: string
 }

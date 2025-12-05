@@ -39,11 +39,21 @@ import { DataTablePagination, DataTableToolbar, DataTableColumnHeader } from '@/
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
 import { useNavigate } from '@tanstack/react-router'
-import { mockServices, mockVehicles } from '@/data/mock-data'
-import { Service, serviceStatusLabels, serviceStatusColors, getVehicleFullName } from '@/types'
+import { serviceStatusLabels, serviceStatusColors } from '@/types'
 import { format } from 'date-fns'
 import { ServicesProvider, useServices } from '@/features/services/components/services-provider'
 import { ServicesDialogs } from '@/features/services/components/services-dialogs'
+import { useQuery } from '@apollo/client/react'
+import { Loader2 } from 'lucide-react'
+import { GET_ALL_SERVICES, type GetAllServicesResponse, type Service } from '@/graphql/services'
+
+// Función helper para calcular el costo total de un servicio
+const calculateServiceTotalCost = (service: Service): number => {
+  const partsCost = service.parts.reduce((sum, part) => {
+    return sum + (part.quantity * part.unitPrice)
+  }, 0)
+  return partsCost + (service.laborCost || 0)
+}
 
 const columns: ColumnDef<Service>[] = [
   {
@@ -78,20 +88,29 @@ const columns: ColumnDef<Service>[] = [
     ),
     cell: ({ row }) => {
       const date = row.getValue('serviceDate') as string
-      return <div>{format(new Date(date), 'dd/MM/yyyy')}</div>
+      if (!date) return <div>-</div>
+
+      // Manejar tanto timestamp como fecha ISO
+      const timestamp = !isNaN(Number(date)) ? Number(date) : date
+      try {
+        return <div>{format(new Date(timestamp), 'dd/MM/yyyy')}</div>
+      } catch (error) {
+        return <div>{date}</div>
+      }
     },
   },
   {
-    accessorKey: 'vehicleId',
+    accessorKey: 'vehicle',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Vehículo' />
     ),
     cell: ({ row }) => {
-      const vehicleId = row.getValue('vehicleId') as string
-      const vehicle = mockVehicles.find(v => v.id === vehicleId)
+      const vehicle = row.original.vehicle
       return (
         <div>
-          <p className='font-medium'>{vehicle ? getVehicleFullName(vehicle) : 'N/A'}</p>
+          <p className='font-medium'>
+            {vehicle ? `${vehicle.vehicleBrand.name} ${vehicle.vehicleModel.name} ${vehicle.year}` : 'N/A'}
+          </p>
           <p className='text-sm text-muted-foreground font-mono'>
             {vehicle?.license}
           </p>
@@ -100,15 +119,24 @@ const columns: ColumnDef<Service>[] = [
     },
   },
   {
-    accessorKey: 'serviceType',
+    accessorKey: 'serviceTypes',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Tipo de Servicio' />
     ),
     cell: ({ row }) => {
       const service = row.original
+      const mainType = service.serviceTypes[0] || 'N/A'
+      const additionalCount = service.serviceTypes.length - 1
       return (
         <div>
-          <p className='font-medium'>{service.serviceType}</p>
+          <p className='font-medium'>
+            {mainType}
+            {additionalCount > 0 && (
+              <span className='text-xs text-muted-foreground ml-1'>
+                +{additionalCount}
+              </span>
+            )}
+          </p>
           <p className='text-sm text-muted-foreground truncate max-w-[200px]'>
             {service.description}
           </p>
@@ -151,13 +179,14 @@ const columns: ColumnDef<Service>[] = [
     },
   },
   {
-    accessorKey: 'totalCost',
+    id: 'totalCost',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Costo' />
     ),
     cell: ({ row }) => {
-      const cost = row.getValue('totalCost') as number
-      return <div className='font-semibold'>${cost.toFixed(2)}</div>
+      const service = row.original
+      const totalCost = calculateServiceTotalCost(service)
+      return <div className='font-semibold'>${totalCost.toFixed(2)}</div>
     },
   },
   {
@@ -245,17 +274,22 @@ export default function AllServicesPage() {
   ])
   const [columnFilters, setColumnFilters] = useState<any[]>([])
 
-  // Calcular estadísticas
-  const totalRevenue = mockServices
-    .filter(s => s.status === 'completed')
-    .reduce((sum, s) => sum + s.totalCost, 0)
+  // Query para obtener todos los servicios
+  const { data, loading, error } = useQuery<GetAllServicesResponse>(GET_ALL_SERVICES)
 
-  const completedServices = mockServices.filter(s => s.status === 'completed').length
-  const pendingServices = mockServices.filter(s => s.status === 'pending').length
-  const inProgressServices = mockServices.filter(s => s.status === 'in_progress').length
+  const services = data?.services || []
+
+  // Calcular estadísticas
+  const totalRevenue = services
+    .filter(s => s.status === 'COMPLETED')
+    .reduce((sum, s) => sum + calculateServiceTotalCost(s), 0)
+
+  const completedServices = services.filter(s => s.status === 'COMPLETED').length
+  const pendingServices = services.filter(s => s.status === 'PENDING').length
+  const inProgressServices = services.filter(s => s.status === 'IN_PROGRESS').length
 
   const table = useReactTable({
-    data: mockServices,
+    data: services,
     columns,
     state: {
       sorting,
@@ -275,6 +309,42 @@ export default function AllServicesPage() {
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
   })
+
+  if (loading) {
+    return (
+      <ServicesProvider vehicleId="">
+        <Header fixed>
+          <Search />
+          <div className='ms-auto flex items-center space-x-4'>
+            <ConfigDrawer />
+            <ProfileDropdown />
+          </div>
+        </Header>
+        <Main className='flex flex-1 items-center justify-center'>
+          <Loader2 className='h-8 w-8 animate-spin text-muted-foreground' />
+        </Main>
+      </ServicesProvider>
+    )
+  }
+
+  if (error) {
+    return (
+      <ServicesProvider vehicleId="">
+        <Header fixed>
+          <Search />
+          <div className='ms-auto flex items-center space-x-4'>
+            <ConfigDrawer />
+            <ProfileDropdown />
+          </div>
+        </Header>
+        <Main className='flex flex-1 items-center justify-center'>
+          <p className='text-sm text-muted-foreground'>
+            Error al cargar los servicios: {error.message}
+          </p>
+        </Main>
+      </ServicesProvider>
+    )
+  }
 
   return (
     <ServicesProvider vehicleId="">
@@ -300,7 +370,7 @@ export default function AllServicesPage() {
         <div className='grid gap-4 md:grid-cols-4'>
           <div className='rounded-lg border bg-card p-4'>
             <p className='text-sm font-medium text-muted-foreground'>Total Servicios</p>
-            <p className='text-2xl font-bold'>{mockServices.length}</p>
+            <p className='text-2xl font-bold'>{services.length}</p>
           </div>
           <div className='rounded-lg border bg-card p-4'>
             <p className='text-sm font-medium text-muted-foreground'>Completados</p>
@@ -319,17 +389,17 @@ export default function AllServicesPage() {
         <div className='flex flex-1 flex-col gap-4'>
           <DataTableToolbar
             table={table}
-            searchPlaceholder='Buscar servicios...'
-            searchKey='serviceType'
+            searchPlaceholder='Buscar servicios por técnico...'
+            searchKey='technicianName'
             filters={[
               {
                 columnId: 'status',
                 title: 'Estado',
                 options: [
-                  { label: 'Completado', value: 'completed' },
-                  { label: 'Pendiente', value: 'pending' },
-                  { label: 'En Progreso', value: 'in_progress' },
-                  { label: 'Cancelado', value: 'cancelled' },
+                  { label: 'Completado', value: 'COMPLETED' },
+                  { label: 'Pendiente', value: 'PENDING' },
+                  { label: 'En Progreso', value: 'IN_PROGRESS' },
+                  { label: 'Cancelado', value: 'CANCELLED' },
                 ],
               },
             ]}

@@ -9,7 +9,7 @@ export function CustomersPrimaryButtons() {
     <div className='flex gap-2'>
       <Button onClick={() => setOpen('create')} className='gap-2'>
         <IconPlus size={18} />
-        Nuevo Usuario
+        Nuevo Proveedor
       </Button>
     </div>
   )

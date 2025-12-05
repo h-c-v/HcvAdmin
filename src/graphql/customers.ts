@@ -1,67 +1,63 @@
 import { gql } from '@apollo/client'
 
-// Fragment para Customer (Usuario propietario de talleres - con password)
-export const CUSTOMER_FRAGMENT = gql`
-  fragment CustomerFields on Customer {
+// Fragment para User (Usuarios con rol MANAGER que son propietarios de talleres)
+export const USER_MANAGER_FRAGMENT = gql`
+  fragment UserManagerFields on User {
     id
-    firstName
+    names
     lastName
     email
     phone
-    status
+    roles
     createdAt
     updatedAt
   }
 `
 
-// Query: Obtener todos los customers
+// Query: Obtener usuarios con rol MANAGER (customers)
 export const GET_CUSTOMERS = gql`
-  ${CUSTOMER_FRAGMENT}
-  query GetCustomers($limit: Int, $offset: Int, $search: String) {
-    customers(limit: $limit, offset: $offset, search: $search) {
-      items {
-        ...CustomerFields
-      }
-      total
-      hasMore
+  ${USER_MANAGER_FRAGMENT}
+  query GetCustomers($filter: UsersFilterInput) {
+    users(filter: $filter) {
+      ...UserManagerFields
     }
   }
 `
 
-// Query: Obtener un customer por ID
+// Query: Obtener un usuario manager por ID
 export const GET_CUSTOMER = gql`
-  ${CUSTOMER_FRAGMENT}
+  ${USER_MANAGER_FRAGMENT}
   query GetCustomer($id: ID!) {
-    customer(id: $id) {
-      ...CustomerFields
+    user(id: $id) {
+      ...UserManagerFields
     }
   }
 `
 
-// Mutation: Crear customer
+// Mutation: Crear usuario manager (customer)
 export const CREATE_CUSTOMER = gql`
-  ${CUSTOMER_FRAGMENT}
-  mutation CreateCustomer($input: CreateCustomerInput!) {
-    createCustomer(input: $input) {
-      ...CustomerFields
+  ${USER_MANAGER_FRAGMENT}
+  mutation CreateCustomer($input: CreateUserInput!) {
+    createUser(input: $input) {
+      ...UserManagerFields
     }
   }
 `
 
-// Mutation: Actualizar customer
+// Mutation: Actualizar usuario manager (customer)
 export const UPDATE_CUSTOMER = gql`
-  ${CUSTOMER_FRAGMENT}
-  mutation UpdateCustomer($input: UpdateCustomerInput!) {
-    updateCustomer(input: $input) {
-      ...CustomerFields
+  ${USER_MANAGER_FRAGMENT}
+  mutation UpdateCustomer($id: ID!, $input: UpdateUserInput!) {
+    updateUser(id: $id, input: $input) {
+      ...UserManagerFields
     }
   }
 `
 
-// Mutation: Eliminar customer
+// Mutation: Eliminar usuario manager (customer)
 export const DELETE_CUSTOMER = gql`
   mutation DeleteCustomer($id: ID!) {
-    deleteCustomer(id: $id) {
+    deleteUser(id: $id) {
       success
       message
     }

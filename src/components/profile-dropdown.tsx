@@ -29,8 +29,8 @@ export function ProfileDropdown() {
   }
 
   const userEmail = auth.user?.email || 'user@example.com'
-  const institution = auth.user.institution
-  const userInitials = getInitials(institution.name)
+  const user = auth.user
+  const userInitials = getInitials(user.names)
 
   return (
     <>
@@ -38,7 +38,7 @@ export function ProfileDropdown() {
         <DropdownMenuTrigger asChild>
           <Button variant='ghost' className='relative h-8 w-8 rounded-full'>
             <Avatar className='h-8 w-8'>
-              <AvatarImage src={institution.logoUrl} alt={userEmail} />
+              <AvatarImage src={user.logoUrl} alt={userEmail} />
               <AvatarFallback>{userInitials}</AvatarFallback>
             </Avatar>
           </Button>
@@ -46,7 +46,7 @@ export function ProfileDropdown() {
         <DropdownMenuContent className='w-56' align='end' forceMount>
           <DropdownMenuLabel className='font-normal'>
             <div className='flex flex-col gap-1.5'>
-              <p className='text-sm leading-none font-medium capitalize'>{institution?.name}</p>
+              <p className='text-sm leading-none font-medium capitalize'>{user?.names}</p>
               <p className='text-muted-foreground text-xs leading-none'>
                 {userEmail}
               </p>

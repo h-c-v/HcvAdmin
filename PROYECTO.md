@@ -244,9 +244,18 @@ interface Vehicle {
   licensePlate: string
   vin: string
   color: string
-  vehicleType: 'car' | 'truck' | 'motorcycle' | 'suv'
+  vehicleType: 'AUTOMOVIL' |
+  'CAMIONETA' |
+  'MOTOCICLETA' |
+  'SUV' |
+  'VAN_FURGONETA'
   currentMileage: number
-  fuelType: 'gasoline' | 'diesel' | 'electric' | 'hybrid'
+  fuelType: 'GASOLINA' |
+  'DIESEL' |
+  'ELECTRICO' |
+  'HIBRIDO' |
+  'GAS_NATURAL' |
+  'GAS_COMPRIMIDO'
   createdAt: Date
   updatedAt: Date
 }
@@ -261,10 +270,8 @@ interface Service {
   description: string
   parts: ServicePart[]
   laborCost: number
-  totalCost: number
   mileage: number
   technicianName: string
-  photos?: string[]
   nextServiceDate?: Date
   nextServiceMileage?: number
   status: 'completed' | 'pending' | 'in_progress'

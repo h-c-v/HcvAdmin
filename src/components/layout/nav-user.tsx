@@ -42,10 +42,8 @@ export function NavUser() {
   }
 
   const userEmail = auth.user?.email || 'usuario@ejemplo.com'
-  const institution = auth.user?.institution
-  const institutionName = institution?.name || 'Institución'
-  const institutionLogo = institution?.logo || undefined
-  const userInitials = getInitials(institutionName)
+  const user = auth.user
+  const userInitials = getInitials(user?.names)
 
   return (
     <>
@@ -58,11 +56,11 @@ export function NavUser() {
                 className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'
               >
                 <Avatar className='h-8 w-8 rounded-lg'>
-                  <AvatarImage src={institutionLogo} alt={institutionName} />
+                  <AvatarImage src={user.logo} alt={user.names} />
                   <AvatarFallback className='rounded-lg'>{userInitials}</AvatarFallback>
                 </Avatar>
                 <div className='grid flex-1 text-start text-sm leading-tight'>
-                  <span className='truncate font-semibold'>{institutionName}</span>
+                  <span className='truncate font-semibold'>{user.names}</span>
                   <span className='truncate text-xs'>{userEmail}</span>
                 </div>
                 <ChevronsUpDown className='ms-auto size-4' />
@@ -77,11 +75,11 @@ export function NavUser() {
               <DropdownMenuLabel className='p-0 font-normal'>
                 <div className='flex items-center gap-2 px-1 py-1.5 text-start text-sm'>
                   <Avatar className='h-8 w-8 rounded-lg'>
-                    <AvatarImage src={institutionLogo} alt={institutionName} />
+                    <AvatarImage src={user.logo} alt={user.names} />
                     <AvatarFallback className='rounded-lg'>{userInitials}</AvatarFallback>
                   </Avatar>
                   <div className='grid flex-1 text-start text-sm leading-tight'>
-                    <span className='truncate font-semibold'>{institutionName}</span>
+                    <span className='truncate font-semibold'>{user.names}</span>
                     <span className='truncate text-xs'>{userEmail}</span>
                   </div>
                 </div>

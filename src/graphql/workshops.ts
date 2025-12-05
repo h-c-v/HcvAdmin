@@ -4,29 +4,32 @@ import { gql } from '@apollo/client'
 export const WORKSHOP_FRAGMENT = gql`
   fragment WorkshopFields on Workshop {
     id
-    customerId
-    businessName
-    taxId
-    address
-    phone
-    email
-    ownerName
+    name
+    cuit
     status
+    manager
+    email
+    phone
+    addressId
+    userId
     createdAt
     updatedAt
+    user {
+      id
+      names
+      lastName
+      email
+      roles
+    }
   }
 `
 
-// Query: Obtener todos los talleres de un customer
+// Query: Obtener todos los talleres
 export const GET_WORKSHOPS = gql`
   ${WORKSHOP_FRAGMENT}
-  query GetWorkshops($customerId: ID!, $limit: Int, $offset: Int, $search: String) {
-    workshops(customerId: $customerId, limit: $limit, offset: $offset, search: $search) {
-      items {
-        ...WorkshopFields
-      }
-      total
-      hasMore
+  query GetWorkshops {
+    workshops {
+      ...WorkshopFields
     }
   }
 `
@@ -50,6 +53,40 @@ export const CREATE_WORKSHOP = gql`
     }
   }
 `
+
+// Input types
+export interface CreateWorkshopInput {
+  name: string
+  cuit?: string
+  status?: boolean
+  manager: string
+  email: string
+  phone: string
+  addressId?: string
+  userId?: string
+}
+
+export interface Workshop {
+  id: string
+  name: string
+  cuit?: string
+  status: boolean
+  manager: string
+  email: string
+  phone: string
+  addressId?: string
+  userId?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CreateWorkshopResponse {
+  createWorkshop: Workshop
+}
+
+export interface GetWorkshopsResponse {
+  workshops: Workshop[]
+}
 
 // Mutation: Actualizar taller
 export const UPDATE_WORKSHOP = gql`

@@ -1,38 +1,41 @@
-export type CustomerStatus = 'active' | 'inactive'
-
-// Customer: Usuario propietario de uno o más talleres
+// Customer: Usuario con rol MANAGER, propietario de uno o más talleres
 export interface Customer {
   id: string
-  firstName: string
+  names: string
   lastName: string
   email: string
-  password: string // Credential para autenticación del Customer
-  phone: string
-  status: CustomerStatus
+  phone?: string
+  roles: string[]
   createdAt: string
   updatedAt: string
 }
 
 export interface CreateCustomerInput {
-  firstName: string
+  names: string
   lastName: string
   email: string
   password: string
-  phone: string
-  status?: CustomerStatus
+  phone?: string
+  roles: string[] // Debe incluir 'MANAGER'
 }
 
 export interface UpdateCustomerInput {
-  id: string
-  firstName?: string
+  names?: string
   lastName?: string
   email?: string
   password?: string
   phone?: string
-  status?: CustomerStatus
+  roles?: string[]
+}
+
+// Input para filtrar usuarios MANAGER
+export interface UsersFilterInput {
+  roles?: string[]
+  email?: string
+  documentId?: string
 }
 
 // Helper para nombre completo
 export const getCustomerFullName = (customer: Customer): string => {
-  return `${customer.firstName} ${customer.lastName}`
+  return `${customer.names} ${customer.lastName}`
 }

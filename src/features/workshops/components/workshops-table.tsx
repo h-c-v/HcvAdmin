@@ -11,6 +11,8 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
+import { useQuery } from '@apollo/client/react'
+import { Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
   Table,
@@ -23,36 +25,7 @@ import {
 import { DataTablePagination, DataTableToolbar } from '@/components/data-table'
 import { workshopsColumns } from './workshops-columns'
 import { Workshop } from '@/types'
-
-// Mock data - replace with real data from API
-const mockWorkshops: Workshop[] = [
-  {
-    id: '1',
-    customerId: '1',
-    businessName: 'Taller Mecánico Central',
-    taxId: '20123456789',
-    address: 'Av. Principal 123, Lima',
-    phone: '+51 999 888 777',
-    email: 'central@taller.com',
-    ownerName: 'Carlos López',
-    status: 'active',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: '2',
-    customerId: '1',
-    businessName: 'Lubricentro Express',
-    taxId: '20987654321',
-    address: 'Jr. Los Olivos 456, Lima',
-    phone: '+51 888 777 666',
-    email: 'express@lubricentro.com',
-    ownerName: 'María Rodríguez',
-    status: 'active',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-]
+import { GET_WORKSHOPS } from '@/graphql/workshops'
 
 export function WorkshopsTable() {
   const [rowSelection, setRowSelection] = useState({})
@@ -60,8 +33,13 @@ export function WorkshopsTable() {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<any[]>([])
 
+  // Query para obtener todos los talleres
+  const { data, loading, error } = useQuery<{ workshops: Workshop[] }>(GET_WORKSHOPS)
+
+  const workshops = data?.workshops || []
+
   const table = useReactTable({
-    data: mockWorkshops,
+    data: workshops,
     columns: workshopsColumns,
     state: {
       sorting,
@@ -82,19 +60,37 @@ export function WorkshopsTable() {
     getFacetedUniqueValues: getFacetedUniqueValues(),
   })
 
+  if (loading) {
+    return (
+      <div className='flex flex-1 items-center justify-center'>
+        <Loader2 className='h-8 w-8 animate-spin text-muted-foreground' />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className='flex flex-1 items-center justify-center'>
+        <p className='text-sm text-muted-foreground'>
+          Error al cargar los talleres: {error.message}
+        </p>
+      </div>
+    )
+  }
+
   return (
     <div className='flex flex-1 flex-col gap-4'>
       <DataTableToolbar
         table={table}
         searchPlaceholder='Buscar talleres...'
-        searchKey='businessName'
+        searchKey='name'
         filters={[
           {
             columnId: 'status',
             title: 'Estado',
             options: [
-              { label: 'Activo', value: 'active' },
-              { label: 'Inactivo', value: 'inactive' },
+              { label: 'Activo', value: true },
+              { label: 'Inactivo', value: false },
             ],
           },
         ]}

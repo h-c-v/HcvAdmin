@@ -1,6 +1,6 @@
 // Role-based access control (RBAC) system
 
-export type UserRole = 'admin' | 'manager' | 'user'
+export type UserRole = 'ADMIN' | 'MANAGER' | 'CLIENT'
 
 export interface PermissionConfig {
   allowedRoles: UserRole[]
@@ -10,49 +10,49 @@ export interface PermissionConfig {
 export const PERMISSIONS: Record<string, PermissionConfig> = {
   // Dashboard - accessible to all authenticated users
   '/': {
-    allowedRoles: ['admin', 'manager', 'user'],
+    allowedRoles: ['ADMIN', 'MANAGER', 'CLIENT'],
   },
 
   // Proveedores - only admin can access
   '/customers': {
-    allowedRoles: ['admin'],
+    allowedRoles: ['ADMIN'],
   },
 
   // Talleres - admin and manager can access
   '/workshops': {
-    allowedRoles: ['admin', 'manager'],
+    allowedRoles: ['ADMIN', 'MANAGER'],
   },
 
   // Clientes - admin and manager can access
   '/all-clients': {
-    allowedRoles: ['admin', 'manager'],
+    allowedRoles: ['ADMIN', 'MANAGER'],
   },
 
   // Vehículos - admin and manager can access
   '/all-vehicles': {
-    allowedRoles: ['admin', 'manager'],
+    allowedRoles: ['ADMIN', 'MANAGER'],
   },
 
   // Servicios - admin and manager can access
   '/all-services': {
-    allowedRoles: ['admin', 'manager'],
+    allowedRoles: ['ADMIN', 'MANAGER'],
   },
 
   // Settings - accessible to all authenticated users
   '/settings': {
-    allowedRoles: ['admin', 'manager', 'user'],
+    allowedRoles: ['ADMIN', 'MANAGER', 'CLIENT'],
   },
   '/settings/account': {
-    allowedRoles: ['admin', 'manager', 'user'],
+    allowedRoles: ['ADMIN', 'MANAGER', 'CLIENT'],
   },
   '/settings/appearance': {
-    allowedRoles: ['admin', 'manager', 'user'],
+    allowedRoles: ['ADMIN', 'MANAGER', 'CLIENT'],
   },
   '/settings/notifications': {
-    allowedRoles: ['admin', 'manager', 'user'],
+    allowedRoles: ['ADMIN', 'MANAGER', 'CLIENT'],
   },
   '/settings/display': {
-    allowedRoles: ['admin', 'manager', 'user'],
+    allowedRoles: ['ADMIN', 'MANAGER', 'CLIENT'],
   },
 }
 

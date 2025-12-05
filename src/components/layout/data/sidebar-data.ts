@@ -46,37 +46,37 @@ export const sidebarData: SidebarData = {
           title: 'Dashboard',
           url: '/',
           icon: LayoutDashboard,
-          allowedRoles: ['admin', 'manager'],
+          allowedRoles: ['ADMIN', 'MANAGER'],
         },
         {
           title: 'Proveedores',
           url: '/customers',
           icon: UserCog,
-          allowedRoles: ['admin'], // Solo admin
+          allowedRoles: ['ADMIN'], // Solo admin
         },
         {
           title: 'Talleres',
           url: '/workshops',
           icon: Store,
-          allowedRoles: ['admin', 'manager'], // Admin y manager
+          allowedRoles: ['ADMIN', 'MANAGER'], // Admin y manager
         },
         {
           title: 'Clientes',
           url: '/all-clients',
           icon: Users,
-          allowedRoles: ['admin', 'manager'], // Admin y manager
+          allowedRoles: ['ADMIN', 'MANAGER'], // Admin y manager
         },
         {
           title: 'Vehículos',
           url: '/all-vehicles',
           icon: Car,
-          allowedRoles: ['admin', 'manager'], // Admin y manager
+          allowedRoles: ['ADMIN', 'MANAGER'], // Admin y manager
         },
         {
           title: 'Servicios',
           url: '/all-services',
           icon: WrenchIcon,
-          allowedRoles: ['admin', 'manager'], // Admin y manager
+          allowedRoles: ['ADMIN', 'MANAGER'], // Admin y manager
         },
       ],
     },
@@ -86,37 +86,37 @@ export const sidebarData: SidebarData = {
         {
           title: 'Configuración',
           icon: Settings,
-          allowedRoles: ['admin', 'manager'],
+          allowedRoles: ['ADMIN', 'MANAGER'],
           items: [
             {
               title: 'Perfil',
               url: '/settings',
               icon: Building2,
-              allowedRoles: ['admin', 'manager'],
+              allowedRoles: ['ADMIN', 'MANAGER'],
             },
             {
               title: 'Cuenta',
               url: '/settings/account',
               icon: Wrench,
-              allowedRoles: ['admin', 'manager'],
+              allowedRoles: ['ADMIN', 'MANAGER'],
             },
             {
               title: 'Apariencia',
               url: '/settings/appearance',
               icon: Palette,
-              allowedRoles: ['admin', 'manager'],
+              allowedRoles: ['ADMIN', 'MANAGER'],
             },
             {
               title: 'Notificaciones',
               url: '/settings/notifications',
               icon: Bell,
-              allowedRoles: ['admin', 'manager'],
+              allowedRoles: ['ADMIN', 'MANAGER'],
             },
             {
               title: 'Pantalla',
               url: '/settings/display',
               icon: Monitor,
-              allowedRoles: ['admin', 'manager'],
+              allowedRoles: ['ADMIN', 'MANAGER'],
             },
           ],
         },

@@ -29,6 +29,8 @@ import {
   useReactTable,
   type ColumnDef,
 } from '@tanstack/react-table'
+import { useQuery } from '@apollo/client/react'
+import { Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
   Table,
@@ -41,9 +43,27 @@ import {
 import { DataTablePagination, DataTableToolbar, DataTableColumnHeader } from '@/components/data-table'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
-import { mockVehicles, mockClients } from '@/data/mock-data'
-import { Vehicle, getVehicleFullName, vehicleTypeLabels, fuelTypeLabels, getClientFullName } from '@/types'
 import { useVehicles } from '@/features/vehicles/components/vehicles-provider'
+import { GET_VEHICLES, type Vehicle, type GetVehiclesResponse } from '@/graphql/vehicles'
+
+// VehicleType labels
+const vehicleTypeLabels: Record<string, string> = {
+  AUTOMOVIL: 'Automóvil',
+  CAMIONETA: 'Camioneta',
+  MOTOCICLETA: 'Motocicleta',
+  SUV: 'SUV',
+  VAN_FURGONETA: 'Van',
+}
+
+// GasolineType labels
+const gasolineTypeLabels: Record<string, string> = {
+  GASOLINA: 'Gasolina',
+  DIESEL: 'Diésel',
+  ELECTRICO: 'Eléctrico',
+  HIBRIDO: 'Híbrido',
+  GAS_NATURAL: 'Gas Natural',
+  GAS_COMPRIMIDO: 'Gas Comprimido',
+}
 
 const columns: ColumnDef<Vehicle>[] = [
   {
@@ -72,19 +92,31 @@ const columns: ColumnDef<Vehicle>[] = [
     },
   },
   {
-    accessorKey: 'vehicle',
+    accessorKey: 'vehicleBrand',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Vehículo' />
+      <DataTableColumnHeader column={column} title='Marca' />
     ),
     cell: ({ row }) => {
-      const vehicle = row.original
-      return (
-        <div>
-          <p className='font-medium'>{getVehicleFullName(vehicle)}</p>
-          <p className='text-sm text-muted-foreground'>{vehicle.color}</p>
-        </div>
-      )
+      const brand = row.original.vehicleBrand
+      return <div className='font-medium'>{brand.name}</div>
     },
+  },
+  {
+    accessorKey: 'vehicleModel',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Modelo' />
+    ),
+    cell: ({ row }) => {
+      const model = row.original.vehicleModel
+      return <div>{model.name}</div>
+    },
+  },
+  {
+    accessorKey: 'year',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Año' />
+    ),
+    cell: ({ row }) => <div>{row.getValue('year')}</div>,
   },
   {
     accessorKey: 'license',
@@ -96,58 +128,47 @@ const columns: ColumnDef<Vehicle>[] = [
     ),
   },
   {
-    accessorKey: 'clientId',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Propietario' />
-    ),
-    cell: ({ row }) => {
-      const clientId = row.getValue('clientId') as string
-      const client = mockClients.find(c => c.id === clientId)
-      return <div>{client ? getClientFullName(client) : 'N/A'}</div>
-    },
-  },
-  {
     accessorKey: 'vehicleType',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Tipo' />
     ),
     cell: ({ row }) => {
-      const type = row.getValue('vehicleType') as keyof typeof vehicleTypeLabels
+      const type = row.getValue('vehicleType') as string
       return (
         <Badge variant='outline'>
-          {vehicleTypeLabels[type]}
+          {vehicleTypeLabels[type] || type}
         </Badge>
       )
     },
   },
   {
-    accessorKey: 'fuelType',
+    accessorKey: 'gasolineType',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Combustible' />
     ),
     cell: ({ row }) => {
-      const type = row.getValue('fuelType') as keyof typeof fuelTypeLabels
+      const type = row.getValue('gasolineType') as string
       return (
         <Badge variant='secondary'>
-          {fuelTypeLabels[type]}
+          {gasolineTypeLabels[type] || type}
         </Badge>
       )
     },
   },
   {
-    accessorKey: 'currentMileage',
+    accessorKey: 'mileage',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Kilometraje' />
     ),
     cell: ({ row }) => {
-      const mileage = row.getValue('currentMileage') as number
+      const mileage = row.getValue('mileage') as number
       return <div>{mileage.toLocaleString()} km</div>
     },
   },
   {
     id: 'actions',
     cell: ({ row }) => {
-      return <VehicleActionsCell vehicleId={row.original.id} />
+      return <VehicleActionsCell vehicle={row.original} />
     },
     meta: {
       className: 'w-[80px]',
@@ -155,23 +176,18 @@ const columns: ColumnDef<Vehicle>[] = [
   },
 ]
 
-function VehicleActionsCell({ vehicleId }: { vehicleId: string }) {
+function VehicleActionsCell({ vehicle }: { vehicle: Vehicle }) {
   const [sheetOpen, setSheetOpen] = useState(false)
   const { setOpen, setCurrentVehicle } = useVehicles()
-  const vehicle = mockVehicles.find(v => v.id === vehicleId)
 
   const handleEdit = () => {
-    if (vehicle) {
-      setCurrentVehicle(vehicle)
-      setOpen('update')
-    }
+    setCurrentVehicle(vehicle)
+    setOpen('update')
   }
 
   const handleDelete = () => {
-    if (vehicle) {
-      setCurrentVehicle(vehicle)
-      setOpen('delete')
-    }
+    setCurrentVehicle(vehicle)
+    setOpen('delete')
   }
 
   return (
@@ -203,7 +219,7 @@ function VehicleActionsCell({ vehicleId }: { vehicleId: string }) {
         </DropdownMenuContent>
       </DropdownMenu>
       <VehicleDetailSheet
-        vehicleId={vehicleId}
+        vehicleId={vehicle.id}
         open={sheetOpen}
         onOpenChange={setSheetOpen}
       />
@@ -233,8 +249,13 @@ export default function AllVehiclesPage() {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<any[]>([])
 
+  // Query para obtener todos los vehículos
+  const { data, loading, error } = useQuery<GetVehiclesResponse>(GET_VEHICLES)
+
+  const vehicles = data?.vehicles || []
+
   const table = useReactTable({
-    data: mockVehicles,
+    data: vehicles,
     columns,
     state: {
       sorting,
@@ -255,6 +276,42 @@ export default function AllVehiclesPage() {
     getFacetedUniqueValues: getFacetedUniqueValues(),
   })
 
+  if (loading) {
+    return (
+      <VehiclesProvider clientId="">
+        <Header fixed>
+          <Search />
+          <div className='ms-auto flex items-center space-x-4'>
+            <ConfigDrawer />
+            <ProfileDropdown />
+          </div>
+        </Header>
+        <Main className='flex flex-1 items-center justify-center'>
+          <Loader2 className='h-8 w-8 animate-spin text-muted-foreground' />
+        </Main>
+      </VehiclesProvider>
+    )
+  }
+
+  if (error) {
+    return (
+      <VehiclesProvider clientId="">
+        <Header fixed>
+          <Search />
+          <div className='ms-auto flex items-center space-x-4'>
+            <ConfigDrawer />
+            <ProfileDropdown />
+          </div>
+        </Header>
+        <Main className='flex flex-1 items-center justify-center'>
+          <p className='text-sm text-muted-foreground'>
+            Error al cargar los vehículos: {error.message}
+          </p>
+        </Main>
+      </VehiclesProvider>
+    )
+  }
+
   return (
     <VehiclesProvider clientId="">
       <Header fixed>
@@ -274,7 +331,7 @@ export default function AllVehiclesPage() {
             </p>
           </div>
           <div className='flex items-center gap-2'>
-            <Badge variant='secondary'>{mockVehicles.length} vehículos</Badge>
+            <Badge variant='secondary'>{vehicles.length} vehículos</Badge>
             <AddVehicleButton />
           </div>
         </div>

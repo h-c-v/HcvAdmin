@@ -8,11 +8,6 @@ interface AuthUser {
   id: string
   email: string
   role: string[]
-  institution: {
-    id: string
-    name: string
-    logo: string | null
-  }
   exp: number
 }
 

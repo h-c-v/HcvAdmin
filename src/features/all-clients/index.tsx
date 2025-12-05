@@ -17,6 +17,8 @@ import {
   useReactTable,
   type ColumnDef,
 } from '@tanstack/react-table'
+import { useQuery } from '@apollo/client/react'
+import { Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
   Table,
@@ -39,13 +41,24 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useNavigate } from '@tanstack/react-router'
-import { mockClients, mockCustomers } from '@/data/mock-data'
-import { Client, getClientFullName } from '@/types'
 import { format } from 'date-fns'
 import { ClientsProvider, useClients } from '@/features/clients/components/clients-provider'
 import { ClientsDialogs } from '@/features/clients/components/clients-dialogs'
+import { GET_CUSTOMERS } from '@/graphql/customers'
 
-const columns: ColumnDef<Client>[] = [
+// User type for CLIENT role users
+interface ClientUser {
+  id: string
+  names: string
+  lastName: string
+  email: string
+  phone?: string
+  roles: string[]
+  createdAt: string
+  updatedAt: string
+}
+
+const columns: ColumnDef<ClientUser>[] = [
   {
     id: 'select',
     header: ({ table }) => (
@@ -72,39 +85,20 @@ const columns: ColumnDef<Client>[] = [
     },
   },
   {
-    accessorKey: 'fullName',
+    accessorKey: 'names',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Cliente' />
+      <DataTableColumnHeader column={column} title='Nombre' />
     ),
-    cell: ({ row }) => {
-      const client = row.original
-      return <div className='font-medium'>{getClientFullName(client)}</div>
-    },
+    cell: ({ row }) => (
+      <div className='font-medium'>{row.getValue('names')}</div>
+    ),
   },
   {
-    accessorKey: 'customerId',
+    accessorKey: 'lastName',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Taller' />
+      <DataTableColumnHeader column={column} title='Apellido' />
     ),
-    cell: ({ row }) => {
-      const customerId = row.getValue('customerId') as string
-      const customer = mockCustomers.find(c => c.id === customerId)
-      return <div>{customer?.businessName || 'N/A'}</div>
-    },
-  },
-  {
-    accessorKey: 'dni',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='DNI' />
-    ),
-    cell: ({ row }) => <div>{row.getValue('dni')}</div>,
-  },
-  {
-    accessorKey: 'phone',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Teléfono' />
-    ),
-    cell: ({ row }) => <div>{row.getValue('phone')}</div>,
+    cell: ({ row }) => <div>{row.getValue('lastName')}</div>,
   },
   {
     accessorKey: 'email',
@@ -114,13 +108,39 @@ const columns: ColumnDef<Client>[] = [
     cell: ({ row }) => <div className='lowercase'>{row.getValue('email')}</div>,
   },
   {
+    accessorKey: 'phone',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Teléfono' />
+    ),
+    cell: ({ row }) => <div>{row.getValue('phone') || '-'}</div>,
+  },
+  {
+    accessorKey: 'roles',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Roles' />
+    ),
+    cell: ({ row }) => {
+      const roles = row.getValue('roles') as string[]
+      return (
+        <div className='flex gap-1'>
+          {roles.map((role) => (
+            <Badge key={role} variant='outline'>
+              {role}
+            </Badge>
+          ))}
+        </div>
+      )
+    },
+  },
+  {
     accessorKey: 'createdAt',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Registrado' />
     ),
     cell: ({ row }) => {
       const date = row.getValue('createdAt') as string
-      return <div>{format(new Date(date), 'dd/MM/yyyy')}</div>
+      const timestamp = !isNaN(Number(date)) ? Number(date) : date
+      return <div>{format(new Date(timestamp), 'dd/MM/yyyy')}</div>
     },
   },
   {
@@ -134,21 +154,22 @@ const columns: ColumnDef<Client>[] = [
   },
 ]
 
-function ClientActionsCell({ client }: { client: Client }) {
+function ClientActionsCell({ client }: { client: ClientUser }) {
   const { setOpen, setCurrentClient } = useClients()
   const navigate = useNavigate()
 
   const handleView = () => {
-    navigate({ to: `/customers/${client.customerId}/clients/${client.id}` })
+    navigate({ to: `/all-clients/${client.id}` })
   }
 
   const handleEdit = () => {
-    setCurrentClient(client)
+    // Convert ClientUser to Client format if needed
+    setCurrentClient(client as any)
     setOpen('update')
   }
 
   const handleDelete = () => {
-    setCurrentClient(client)
+    setCurrentClient(client as any)
     setOpen('delete')
   }
 
@@ -205,8 +226,19 @@ export default function AllClientsPage() {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<any[]>([])
 
+  // Query para obtener usuarios con rol CLIENT
+  const { data, loading, error } = useQuery<{ users: ClientUser[] }>(GET_CUSTOMERS, {
+    variables: {
+      filter: {
+        roles: ['CLIENT']
+      }
+    }
+  })
+
+  const clients = data?.users || []
+
   const table = useReactTable({
-    data: mockClients,
+    data: clients,
     columns,
     state: {
       sorting,
@@ -227,6 +259,42 @@ export default function AllClientsPage() {
     getFacetedUniqueValues: getFacetedUniqueValues(),
   })
 
+  if (loading) {
+    return (
+      <ClientsProvider customerId="">
+        <Header fixed>
+          <Search />
+          <div className='ms-auto flex items-center space-x-4'>
+            <ConfigDrawer />
+            <ProfileDropdown />
+          </div>
+        </Header>
+        <Main className='flex flex-1 items-center justify-center'>
+          <Loader2 className='h-8 w-8 animate-spin text-muted-foreground' />
+        </Main>
+      </ClientsProvider>
+    )
+  }
+
+  if (error) {
+    return (
+      <ClientsProvider customerId="">
+        <Header fixed>
+          <Search />
+          <div className='ms-auto flex items-center space-x-4'>
+            <ConfigDrawer />
+            <ProfileDropdown />
+          </div>
+        </Header>
+        <Main className='flex flex-1 items-center justify-center'>
+          <p className='text-sm text-muted-foreground'>
+            Error al cargar los clientes: {error.message}
+          </p>
+        </Main>
+      </ClientsProvider>
+    )
+  }
+
   return (
     <ClientsProvider customerId="">
       <Header fixed>
@@ -246,7 +314,7 @@ export default function AllClientsPage() {
             </p>
           </div>
           <div className='flex items-center gap-2'>
-            <Badge variant='secondary'>{mockClients.length} clientes</Badge>
+            <Badge variant='secondary'>{clients.length} clientes</Badge>
             <NewClientButton />
           </div>
         </div>
@@ -255,7 +323,7 @@ export default function AllClientsPage() {
           <DataTableToolbar
             table={table}
             searchPlaceholder='Buscar clientes...'
-            searchKey='fullName'
+            searchKey='names'
           />
           <div className='overflow-hidden rounded-md border'>
             <Table>
@@ -290,7 +358,7 @@ export default function AllClientsPage() {
                       key={row.id}
                       data-state={row.getIsSelected() && 'selected'}
                       className='group/row cursor-pointer'
-                      onClick={() => navigate({ to: `/customers/${row.original.customerId}/clients/${row.original.id}` })}
+                      onClick={() => navigate({ to: `/all-clients/${row.original.id}` })}
                     >
                       {row.getVisibleCells().map((cell) => (
                         <TableCell

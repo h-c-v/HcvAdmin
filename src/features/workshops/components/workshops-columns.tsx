@@ -33,27 +33,41 @@ export const workshopsColumns: ColumnDef<Workshop>[] = [
     },
   },
   {
-    accessorKey: 'businessName',
+    accessorKey: 'name',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Nombre del Negocio' />
+      <DataTableColumnHeader column={column} title='Nombre del Taller' />
     ),
     cell: ({ row }) => (
-      <div className='font-medium'>{row.getValue('businessName')}</div>
+      <div className='font-medium'>{row.getValue('name')}</div>
     ),
   },
   {
-    accessorKey: 'taxId',
+    accessorKey: 'cuit',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='CUIT' />
     ),
-    cell: ({ row }) => <div>{row.getValue('taxId')}</div>,
+    cell: ({ row }) => <div>{row.getValue('cuit')}</div>,
   },
   {
-    accessorKey: 'ownerName',
+    accessorKey: 'manager',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Encargado' />
     ),
-    cell: ({ row }) => <div>{row.getValue('ownerName')}</div>,
+    cell: ({ row }) => <div>{row.getValue('manager')}</div>,
+  },
+  {
+    accessorKey: 'user',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Propietario' />
+    ),
+    cell: ({ row }) => {
+      const user = row.getValue('user') as { names: string; lastName: string } | undefined
+      return user ? (
+        <div>{user.names} {user.lastName}</div>
+      ) : (
+        <div className='text-muted-foreground'>-</div>
+      )
+    },
   },
   {
     accessorKey: 'phone',
@@ -75,10 +89,10 @@ export const workshopsColumns: ColumnDef<Workshop>[] = [
       <DataTableColumnHeader column={column} title='Estado' />
     ),
     cell: ({ row }) => {
-      const status = row.getValue('status') as string
+      const status = row.getValue('status') as boolean
       return (
-        <Badge variant={status === 'active' ? 'default' : 'secondary'}>
-          {status === 'active' ? 'Activo' : 'Inactivo'}
+        <Badge variant={status ? 'default' : 'secondary'}>
+          {status ? 'Activo' : 'Inactivo'}
         </Badge>
       )
     },
@@ -93,7 +107,8 @@ export const workshopsColumns: ColumnDef<Workshop>[] = [
     ),
     cell: ({ row }) => {
       const date = row.getValue('createdAt') as string
-      return <div>{format(new Date(date), 'dd/MM/yyyy')}</div>
+      const timestamp = !isNaN(Number(date)) ? Number(date) : date
+      return <div>{format(new Date(timestamp), 'dd/MM/yyyy')}</div>
     },
   },
   {

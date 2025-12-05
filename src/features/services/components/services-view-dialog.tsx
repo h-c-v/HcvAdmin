@@ -11,6 +11,14 @@ import { useServices } from './services-provider'
 import { serviceStatusLabels, serviceStatusColors } from '@/types'
 import { format } from 'date-fns'
 
+// Función helper para calcular el costo total de un servicio
+const calculateServiceTotalCost = (service: any): number => {
+  const partsCost = service.parts.reduce((sum: number, part: any) => {
+    return sum + (part.quantity * part.unitPrice)
+  }, 0)
+  return partsCost + (service.laborCost || 0)
+}
+
 export function ServicesViewDialog() {
   const { open, setOpen, currentService } = useServices()
 
@@ -20,17 +28,44 @@ export function ServicesViewDialog() {
     setOpen(null)
   }
 
+  // Manejar fecha
+  const formatServiceDate = (dateString: string) => {
+    if (!dateString) return '-'
+    const timestamp = !isNaN(Number(dateString)) ? Number(dateString) : dateString
+    try {
+      return format(new Date(timestamp), 'dd/MM/yyyy')
+    } catch (error) {
+      return dateString
+    }
+  }
+
+  const totalCost = calculateServiceTotalCost(currentService)
+  const mainServiceType = currentService.serviceTypes?.[0] || 'Servicio'
+
   return (
     <Dialog open={open === 'view'} onOpenChange={handleClose}>
-      <DialogContent className='sm:max-w-[600px] max-h-[90vh] overflow-y-auto'>
+      <DialogContent className='sm:max-w-[700px] max-h-[90vh] overflow-y-auto'>
         <DialogHeader>
           <DialogTitle>Detalles del Servicio</DialogTitle>
           <DialogDescription>
-            {currentService.serviceType} - {format(new Date(currentService.serviceDate), 'dd/MM/yyyy')}
+            {mainServiceType} - {formatServiceDate(currentService.serviceDate)}
           </DialogDescription>
         </DialogHeader>
 
         <div className='space-y-4'>
+          {/* Vehículo */}
+          {currentService.vehicle && (
+            <div className='p-4 bg-muted/50 rounded-md'>
+              <p className='text-sm font-medium text-muted-foreground mb-1'>Vehículo</p>
+              <p className='text-lg font-semibold'>
+                {currentService.vehicle.vehicleBrand.name} {currentService.vehicle.vehicleModel.name} {currentService.vehicle.year}
+              </p>
+              <p className='text-sm text-muted-foreground font-mono'>
+                Patente: {currentService.vehicle.license}
+              </p>
+            </div>
+          )}
+
           <div className='flex items-center justify-between'>
             <div>
               <p className='text-sm text-muted-foreground'>Estado</p>
@@ -40,7 +75,7 @@ export function ServicesViewDialog() {
             </div>
             <div className='text-right'>
               <p className='text-sm text-muted-foreground'>Costo Total</p>
-              <p className='text-2xl font-bold'>${currentService.totalCost.toFixed(2)}</p>
+              <p className='text-2xl font-bold'>${totalCost.toFixed(2)}</p>
             </div>
           </div>
 
@@ -48,16 +83,22 @@ export function ServicesViewDialog() {
 
           <div className='grid grid-cols-2 gap-4'>
             <div>
-              <p className='text-sm font-medium text-muted-foreground'>Tipo de Servicio</p>
-              <p className='text-base'>{currentService.serviceType}</p>
+              <p className='text-sm font-medium text-muted-foreground'>Tipos de Servicio</p>
+              <div className='flex flex-wrap gap-1 mt-1'>
+                {currentService.serviceTypes?.map((type: string, index: number) => (
+                  <Badge key={index} variant='outline'>
+                    {type}
+                  </Badge>
+                ))}
+              </div>
             </div>
             <div>
               <p className='text-sm font-medium text-muted-foreground'>Fecha</p>
-              <p className='text-base'>{format(new Date(currentService.serviceDate), 'dd/MM/yyyy')}</p>
+              <p className='text-base'>{formatServiceDate(currentService.serviceDate)}</p>
             </div>
             <div>
               <p className='text-sm font-medium text-muted-foreground'>Kilometraje</p>
-              <p className='text-base'>{currentService.mileage.toLocaleString()} km</p>
+              <p className='text-base'>{currentService.mileage?.toLocaleString()} km</p>
             </div>
             <div>
               <p className='text-sm font-medium text-muted-foreground'>Técnico</p>
@@ -70,7 +111,7 @@ export function ServicesViewDialog() {
             <p className='text-base'>{currentService.description}</p>
           </div>
 
-          {currentService.parts.length > 0 && (
+          {currentService.parts && currentService.parts.length > 0 && (
             <>
               <Separator />
               <div>
@@ -78,8 +119,8 @@ export function ServicesViewDialog() {
                   Repuestos Utilizados
                 </p>
                 <div className='space-y-2'>
-                  {currentService.parts.map((part) => (
-                    <div key={part.id} className='flex justify-between items-center p-2 rounded-md bg-muted'>
+                  {currentService.parts.map((part: any, index: number) => (
+                    <div key={index} className='flex justify-between items-center p-2 rounded-md bg-muted'>
                       <div className='flex-1'>
                         <p className='font-medium'>{part.partName}</p>
                         {part.partCode && (
@@ -90,7 +131,7 @@ export function ServicesViewDialog() {
                         <p className='text-sm text-muted-foreground'>
                           {part.quantity} x ${part.unitPrice.toFixed(2)}
                         </p>
-                        <p className='font-semibold'>${part.totalPrice.toFixed(2)}</p>
+                        <p className='font-semibold'>${(part.quantity * part.unitPrice).toFixed(2)}</p>
                       </div>
                     </div>
                   ))}
@@ -105,17 +146,17 @@ export function ServicesViewDialog() {
             <div className='flex justify-between'>
               <span className='text-muted-foreground'>Subtotal Repuestos</span>
               <span className='font-medium'>
-                ${currentService.parts.reduce((sum, part) => sum + part.totalPrice, 0).toFixed(2)}
+                ${currentService.parts?.reduce((sum: number, part: any) => sum + (part.quantity * part.unitPrice), 0).toFixed(2)}
               </span>
             </div>
             <div className='flex justify-between'>
               <span className='text-muted-foreground'>Mano de Obra</span>
-              <span className='font-medium'>${currentService.laborCost.toFixed(2)}</span>
+              <span className='font-medium'>${currentService.laborCost?.toFixed(2)}</span>
             </div>
             <Separator />
             <div className='flex justify-between text-lg'>
               <span className='font-semibold'>Total</span>
-              <span className='font-bold'>${currentService.totalCost.toFixed(2)}</span>
+              <span className='font-bold'>${totalCost.toFixed(2)}</span>
             </div>
           </div>
 
@@ -129,7 +170,7 @@ export function ServicesViewDialog() {
                     <div>
                       <p className='text-xs text-muted-foreground'>Fecha</p>
                       <p className='font-medium'>
-                        {format(new Date(currentService.nextServiceDate), 'dd/MM/yyyy')}
+                        {formatServiceDate(currentService.nextServiceDate)}
                       </p>
                     </div>
                   )}
@@ -137,7 +178,7 @@ export function ServicesViewDialog() {
                     <div>
                       <p className='text-xs text-muted-foreground'>Kilometraje</p>
                       <p className='font-medium'>
-                        {currentService.nextServiceMileage.toLocaleString()} km
+                        {currentService.nextServiceMileage?.toLocaleString()} km
                       </p>
                     </div>
                   )}

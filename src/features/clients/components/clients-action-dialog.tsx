@@ -2,6 +2,9 @@ import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
+import { useMutation } from '@apollo/client/react'
+import { toast } from 'sonner'
+import { Loader2 } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -23,22 +26,19 @@ import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { PasswordInput } from '@/components/password-input'
 import { useClients } from './clients-provider'
+import { CREATE_USER, type RegisterInput, type CreateUserResponse } from '@/graphql/mutations'
+import { GET_CUSTOMERS } from '@/graphql/customers'
 
 const clientSchema = z.object({
-  firstName: z.string().min(1, 'El nombre es requerido'),
+  names: z.string().min(1, 'El nombre es requerido'),
   lastName: z.string().min(1, 'El apellido es requerido'),
-  dni: z.string().min(1, 'El DNI/Cédula es requerido'),
-  phone: z.string().min(1, 'El teléfono es requerido'),
+  documentId: z.string().min(1, 'El DNI/Cédula es requerido'),
+  phone: z.string().optional(),
   email: z.string().email('Email inválido'),
   password: z
     .string()
-    .min(8, 'La contraseña debe tener al menos 8 caracteres')
-    .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-      'La contraseña debe contener al menos una mayúscula, una minúscula y un número'
-    ),
-  address: z.string().min(1, 'La dirección es requerida'),
-  notes: z.string().optional(),
+    .min(6, 'La contraseña debe tener al menos 6 caracteres'),
+  photoUrl: z.string().optional(),
 })
 
 type ClientFormValues = z.infer<typeof clientSchema>
@@ -47,81 +47,81 @@ export function ClientsActionDialog() {
   const { open, setOpen, currentClient, customerId } = useClients()
   const isEditing = open === 'update'
 
-  // Schema dinámico: contraseña requerida al crear, opcional al editar
-  const getClientSchema = (isEditing: boolean) => {
-    return z.object({
-      firstName: z.string().min(1, 'El nombre es requerido'),
-      lastName: z.string().min(1, 'El apellido es requerido'),
-      dni: z.string().min(1, 'El DNI/Cédula es requerido'),
-      phone: z.string().min(1, 'El teléfono es requerido'),
-      email: z.string().email('Email inválido'),
-      password: isEditing
-        ? z.string().optional().or(z.literal(''))
-        : z
-            .string()
-            .min(8, 'La contraseña debe tener al menos 8 caracteres')
-            .regex(
-              /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-              'La contraseña debe contener al menos una mayúscula, una minúscula y un número'
-            ),
-      address: z.string().min(1, 'La dirección es requerida'),
-      notes: z.string().optional(),
-    })
-  }
-
   const form = useForm<ClientFormValues>({
-    resolver: zodResolver(getClientSchema(isEditing)),
+    resolver: zodResolver(clientSchema),
     defaultValues: {
-      firstName: '',
+      names: '',
       lastName: '',
-      dni: '',
+      documentId: '',
       phone: '',
       email: '',
       password: '',
-      address: '',
-      notes: '',
+      photoUrl: '',
     },
   })
 
-  useEffect(() => {
-    // Actualizar el resolver cuando cambie el modo
-    const newSchema = getClientSchema(isEditing)
-    form.clearErrors()
+  const [createUser, { loading }] = useMutation<CreateUserResponse, { input: RegisterInput }>(
+    CREATE_USER,
+    {
+      refetchQueries: [
+        {
+          query: GET_CUSTOMERS,
+          variables: {
+            filter: { roles: ['CLIENT'] }
+          }
+        }
+      ],
+      onCompleted: (data) => {
+        toast.success('Cliente creado exitosamente')
+        handleClose()
+      },
+      onError: (error) => {
+        console.error('Error creating client:', error)
+        toast.error(`Error al crear el cliente: ${error.message}`)
+      },
+    }
+  )
 
+  useEffect(() => {
     if (currentClient && isEditing) {
       form.reset({
-        firstName: currentClient.firstName,
-        lastName: currentClient.lastName,
-        dni: currentClient.dni,
-        phone: currentClient.phone,
-        email: currentClient.email,
-        password: '', // No mostrar la contraseña existente
-        address: currentClient.address,
-        notes: currentClient.notes || '',
+        names: (currentClient as any).names || '',
+        lastName: (currentClient as any).lastName || '',
+        documentId: (currentClient as any).documentId || '',
+        phone: (currentClient as any).phone || '',
+        email: (currentClient as any).email || '',
+        password: '',
+        photoUrl: (currentClient as any).photoUrl || '',
       })
     } else {
       form.reset({
-        firstName: '',
+        names: '',
         lastName: '',
-        dni: '',
+        documentId: '',
         phone: '',
         email: '',
         password: '',
-        address: '',
-        notes: '',
+        photoUrl: '',
       })
     }
   }, [currentClient, isEditing, form])
 
   const onSubmit = async (data: ClientFormValues) => {
-    console.log('Submitting client:', { ...data, customerId })
-    // TODO: Implement GraphQL mutation
-    // if (isEditing) {
-    //   await updateClient({ id: currentClient!.id, ...data })
-    // } else {
-    //   await createClient({ customerId, ...data })
-    // }
-    handleClose()
+    if (isEditing) {
+      // TODO: Implement update mutation
+      toast.info('Edición de clientes aún no implementada')
+      return
+    }
+
+    // Crear nuevo usuario con rol CLIENT
+    await createUser({
+      variables: {
+        input: {
+          ...data,
+          roles: ['CLIENT'],
+        },
+      },
+    })
   }
 
   const handleClose = () => {
@@ -148,7 +148,7 @@ export function ClientsActionDialog() {
             <div className='grid grid-cols-2 gap-4'>
               <FormField
                 control={form.control}
-                name='firstName'
+                name='names'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Nombre</FormLabel>
@@ -176,34 +176,6 @@ export function ClientsActionDialog() {
 
               <FormField
                 control={form.control}
-                name='dni'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>DNI/Cédula</FormLabel>
-                    <FormControl>
-                      <Input placeholder='Ej: 12345678' {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name='phone'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Teléfono</FormLabel>
-                    <FormControl>
-                      <Input placeholder='Ej: +51 999 999 999' {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
                 name='email'
                 render={({ field }) => (
                   <FormItem className='col-span-2'>
@@ -222,15 +194,27 @@ export function ClientsActionDialog() {
 
               <FormField
                 control={form.control}
+                name='documentId'
+                render={({ field }) => (
+                  <FormItem className='col-span-2'>
+                    <FormLabel>DNI/Cédula</FormLabel>
+                    <FormControl>
+                      <Input placeholder='Ej: 12345678' {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
                 name='password'
                 render={({ field }) => (
-                  <FormItem className='col-span-2'>
-                    <FormLabel>
-                      Contraseña {isEditing && '(dejar vacío para mantener la actual)'}
-                    </FormLabel>
+                  <FormItem>
+                    <FormLabel>Contraseña</FormLabel>
                     <FormControl>
                       <PasswordInput
-                        placeholder='Mínimo 8 caracteres'
+                        placeholder='Mínimo 6 caracteres'
                         {...field}
                       />
                     </FormControl>
@@ -241,15 +225,12 @@ export function ClientsActionDialog() {
 
               <FormField
                 control={form.control}
-                name='address'
+                name='phone'
                 render={({ field }) => (
-                  <FormItem className='col-span-2'>
-                    <FormLabel>Dirección</FormLabel>
+                  <FormItem>
+                    <FormLabel>Teléfono (opcional)</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder='Ej: Av. Principal 123'
-                        {...field}
-                      />
+                      <Input placeholder='Ej: +51 999 999 999' {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -258,16 +239,12 @@ export function ClientsActionDialog() {
 
               <FormField
                 control={form.control}
-                name='notes'
+                name='photoUrl'
                 render={({ field }) => (
                   <FormItem className='col-span-2'>
-                    <FormLabel>Notas (opcional)</FormLabel>
+                    <FormLabel>URL de Foto (opcional)</FormLabel>
                     <FormControl>
-                      <Textarea
-                        placeholder='Información adicional sobre el cliente...'
-                        className='resize-none'
-                        {...field}
-                      />
+                      <Input placeholder='https://ejemplo.com/foto.jpg' {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -276,11 +253,12 @@ export function ClientsActionDialog() {
             </div>
 
             <DialogFooter>
-              <Button type='button' variant='outline' onClick={handleClose}>
+              <Button type='button' variant='outline' onClick={handleClose} disabled={loading}>
                 Cancelar
               </Button>
-              <Button type='submit'>
-                {isEditing ? 'Actualizar' : 'Crear'}
+              <Button type='submit' disabled={loading}>
+                {loading && <Loader2 className='animate-spin' />}
+                {isEditing ? 'Actualizar' : 'Crear Cliente'}
               </Button>
             </DialogFooter>
           </form>
