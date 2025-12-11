@@ -25,6 +25,9 @@ export default defineConfig({
       '@apollo/client/react',
       'react',
       'react-dom',
+      'react/jsx-runtime',
+      'react-dom/client',
+      'scheduler',
       '@tanstack/react-query',
       'recharts',
       'es-toolkit/compat'
@@ -36,7 +39,16 @@ export default defineConfig({
   build: {
     target: 'esnext',
     commonjsOptions: {
-      include: [/@apollo\/client/, /react/, /react-dom/, /@tanstack/, /es-toolkit/, /eventemitter3/],
+      include: [
+        /node_modules/,
+        /@apollo\/client/,
+        /react/,
+        /react-dom/,
+        /scheduler/,
+        /@tanstack/,
+        /es-toolkit/,
+        /eventemitter3/
+      ],
       transformMixedEsModules: true,
     },
     rollupOptions: {
