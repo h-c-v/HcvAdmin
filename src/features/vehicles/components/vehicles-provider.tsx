@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, ReactNode } from 'react'
-import { Vehicle } from '@/types'
+import { Vehicle } from '@/graphql/vehicles'
 
 export type VehiclesDialogType = 'create' | 'update' | 'delete' | 'view-services' | null
 

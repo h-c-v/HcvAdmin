@@ -22,7 +22,6 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { PasswordInput } from '@/components/password-input'
 import { useClients } from './clients-provider'
@@ -44,7 +43,7 @@ const clientSchema = z.object({
 type ClientFormValues = z.infer<typeof clientSchema>
 
 export function ClientsActionDialog() {
-  const { open, setOpen, currentClient, customerId } = useClients()
+  const { open, setOpen, currentClient } = useClients()
   const isEditing = open === 'update'
 
   const form = useForm<ClientFormValues>({
@@ -71,7 +70,7 @@ export function ClientsActionDialog() {
           }
         }
       ],
-      onCompleted: (data) => {
+      onCompleted: () => {
         toast.success('Cliente creado exitosamente')
         handleClose()
       },

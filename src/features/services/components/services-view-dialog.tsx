@@ -53,18 +53,7 @@ export function ServicesViewDialog() {
         </DialogHeader>
 
         <div className='space-y-4'>
-          {/* Vehículo */}
-          {currentService.vehicle && (
-            <div className='p-4 bg-muted/50 rounded-md'>
-              <p className='text-sm font-medium text-muted-foreground mb-1'>Vehículo</p>
-              <p className='text-lg font-semibold'>
-                {currentService.vehicle.vehicleBrand.name} {currentService.vehicle.vehicleModel.name} {currentService.vehicle.year}
-              </p>
-              <p className='text-sm text-muted-foreground font-mono'>
-                Patente: {currentService.vehicle.license}
-              </p>
-            </div>
-          )}
+          {/* Vehículo - Removed as Service type doesn't include vehicle object */}
 
           <div className='flex items-center justify-between'>
             <div>

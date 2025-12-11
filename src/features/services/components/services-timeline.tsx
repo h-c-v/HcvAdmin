@@ -17,11 +17,6 @@ export function ServicesTimeline({ vehicleId }: ServicesTimelineProps) {
   // TODO: Fetch services from GraphQL
   const services = mockServices.filter(s => s.vehicleId === vehicleId)
 
-  const handleView = (service: typeof mockServices[0]) => {
-    setCurrentService(service)
-    setOpen('view')
-  }
-
   const handleViewDetail = (service: typeof mockServices[0]) => {
     setCurrentService(service)
     setOpen('view')
@@ -54,7 +49,7 @@ export function ServicesTimeline({ vehicleId }: ServicesTimelineProps) {
       {/* Timeline line */}
       <div className='absolute left-[1.5rem] top-0 bottom-0 w-0.5 bg-border' />
 
-      {services.map((service, index) => (
+      {services.map((service) => (
         <div key={service.id} className='relative flex gap-4'>
           {/* Timeline dot */}
           <div className='relative z-10'>
@@ -69,7 +64,7 @@ export function ServicesTimeline({ vehicleId }: ServicesTimelineProps) {
               <div className='flex items-start justify-between mb-3'>
                 <div className='flex-1'>
                   <div className='flex items-center gap-2 mb-1'>
-                    <h3 className='font-semibold text-lg'>{service.serviceTypes?.join(', ') || service.serviceType || 'Servicio'}</h3>
+                    <h3 className='font-semibold text-lg'>{service.serviceTypes?.join(', ') || 'Servicio'}</h3>
                     <Badge variant={serviceStatusColors[service.status]}>
                       {serviceStatusLabels[service.status]}
                     </Badge>
@@ -112,7 +107,7 @@ export function ServicesTimeline({ vehicleId }: ServicesTimelineProps) {
                   <span className='font-medium'>{service.technicianName}</span>
                 </div>
                 <div className='text-right'>
-                  <p className='text-lg font-bold'>${service.totalCost.toFixed(2)}</p>
+                  <p className='text-lg font-bold'>${(service.totalCost ?? 0).toFixed(2)}</p>
                 </div>
               </div>
 

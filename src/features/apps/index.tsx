@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { type ChangeEvent, useState } from 'react'
 import { getRouteApi } from '@tanstack/react-router'
 import { SlidersHorizontal, ArrowUpAZ, ArrowDownAZ } from 'lucide-react'

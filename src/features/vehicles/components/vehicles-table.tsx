@@ -11,7 +11,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useVehicles } from './vehicles-provider'
-import { getVehicleFullName, vehicleTypeLabels, fuelTypeLabels } from '@/types'
+import { vehicleTypeLabels, fuelTypeLabels } from '@/types'
 import { mockVehicles } from '@/data/mock-data'
 import { VehicleDetailSheet } from './vehicle-detail-sheet'
 
@@ -33,12 +33,12 @@ export function VehiclesTable({ clientId }: VehiclesTableProps) {
   }
 
   const handleEdit = (vehicle: typeof mockVehicles[0]) => {
-    setCurrentVehicle(vehicle)
+    setCurrentVehicle(vehicle as any)
     setOpen('update')
   }
 
   const handleDelete = (vehicle: typeof mockVehicles[0]) => {
-    setCurrentVehicle(vehicle)
+    setCurrentVehicle(vehicle as any)
     setOpen('delete')
   }
 
@@ -89,7 +89,7 @@ export function VehiclesTable({ clientId }: VehiclesTableProps) {
               <TableRow key={vehicle.id}>
                 <TableCell>
                   <div>
-                    <p className='font-medium'>{getVehicleFullName(vehicle)}</p>
+                    <p className='font-medium'>{vehicle.brand} {vehicle.model} {vehicle.year}</p>
                     <p className='text-sm text-muted-foreground'>{vehicle.color}</p>
                   </div>
                 </TableCell>
@@ -145,14 +145,14 @@ export function VehiclesTable({ clientId }: VehiclesTableProps) {
         onEdit={(id) => {
           const vehicle = vehicles.find(v => v.id === id)
           if (vehicle) {
-            setCurrentVehicle(vehicle)
+            setCurrentVehicle(vehicle as any)
             setOpen('update')
           }
         }}
         onDelete={(id) => {
           const vehicle = vehicles.find(v => v.id === id)
           if (vehicle) {
-            setCurrentVehicle(vehicle)
+            setCurrentVehicle(vehicle as any)
             setOpen('delete')
           }
         }}

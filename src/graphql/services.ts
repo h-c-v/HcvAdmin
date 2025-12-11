@@ -1,4 +1,5 @@
 import { gql } from '@apollo/client'
+import { type ServiceStatus } from '@/types/service'
 
 // Fragment para ServicePart
 export const SERVICE_PART_FRAGMENT = gql`
@@ -182,7 +183,7 @@ export interface Service {
   technicianName: string
   nextServiceDate?: string
   nextServiceMileage?: number
-  status: string
+  status: ServiceStatus
   notes?: string
   createdAt: string
   updatedAt: string

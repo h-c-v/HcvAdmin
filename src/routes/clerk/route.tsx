@@ -7,7 +7,6 @@ import { SidebarTrigger } from '@/components/ui/sidebar'
 import { ConfigDrawer } from '@/components/config-drawer'
 import { AuthenticatedLayout } from '@/components/layout/authenticated-layout'
 import { Main } from '@/components/layout/main'
-import { ThemeSwitch } from '@/components/theme-switch'
 
 export const Route = createFileRoute('/clerk')({
   component: RouteComponent,

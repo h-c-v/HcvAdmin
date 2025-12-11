@@ -1,13 +1,10 @@
 export type ServiceStatus = 'COMPLETED' | 'PENDING' | 'IN_PROGRESS' | 'CANCELLED'
 
 export interface ServicePart {
-  id: string
-  serviceId: string
   partName: string
   partCode?: string
   quantity: number
   unitPrice: number
-  totalPrice: number
 }
 
 export interface Service {
@@ -81,10 +78,10 @@ export const serviceStatusColors: Record<
   ServiceStatus,
   'default' | 'secondary' | 'destructive' | 'outline'
 > = {
-  completed: 'default',
-  pending: 'secondary',
-  in_progress: 'outline',
-  cancelled: 'destructive',
+  COMPLETED: 'default',
+  PENDING: 'secondary',
+  IN_PROGRESS: 'outline',
+  CANCELLED: 'destructive',
 }
 
 // Tipos de servicio comunes

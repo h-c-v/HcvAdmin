@@ -9,7 +9,6 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { useVehicles } from './vehicles-provider'
-import { getVehicleFullName } from '@/types'
 
 export function VehiclesDeleteDialog() {
   const { open, setOpen, currentVehicle } = useVehicles()
@@ -24,6 +23,11 @@ export function VehiclesDeleteDialog() {
     setOpen(null)
   }
 
+  const getVehicleFullName = () => {
+    if (!currentVehicle) return ''
+    return `${currentVehicle.vehicleBrand.name} ${currentVehicle.vehicleModel.name} ${currentVehicle.year}`
+  }
+
   return (
     <AlertDialog open={open === 'delete'} onOpenChange={() => setOpen(null)}>
       <AlertDialogContent>
@@ -31,7 +35,7 @@ export function VehiclesDeleteDialog() {
           <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
           <AlertDialogDescription>
             Esta acción no se puede deshacer. Esto eliminará permanentemente el
-            vehículo <strong>{currentVehicle ? getVehicleFullName(currentVehicle) : ''}</strong> y
+            vehículo <strong>{getVehicleFullName()}</strong> y
             todo su historial de servicios.
           </AlertDialogDescription>
         </AlertDialogHeader>

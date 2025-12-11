@@ -89,8 +89,8 @@ export function WorkshopsTable() {
             columnId: 'status',
             title: 'Estado',
             options: [
-              { label: 'Activo', value: true },
-              { label: 'Inactivo', value: false },
+              { label: 'Activo', value: 'true' },
+              { label: 'Inactivo', value: 'false' },
             ],
           },
         ]}

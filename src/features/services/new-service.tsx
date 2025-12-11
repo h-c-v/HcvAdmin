@@ -55,8 +55,8 @@ import { GET_WORKSHOPS, type GetWorkshopsResponse } from '@/graphql/workshops'
 const servicePartSchema = z.object({
   partName: z.string().min(1, 'El nombre de la parte es requerido'),
   partCode: z.string().optional(),
-  quantity: z.coerce.number().min(1, 'La cantidad debe ser mayor a 0'),
-  unitPrice: z.coerce.number().min(0, 'El precio debe ser positivo'),
+  quantity: z.number().min(1, 'La cantidad debe ser mayor a 0'),
+  unitPrice: z.number().min(0, 'El precio debe ser positivo'),
 })
 
 const serviceSchema = z.object({
@@ -66,11 +66,11 @@ const serviceSchema = z.object({
   serviceTypes: z.array(z.string()).min(1, 'Selecciona al menos un tipo de servicio'),
   description: z.string().min(1, 'La descripción es requerida'),
   parts: z.array(servicePartSchema),
-  laborCost: z.coerce.number().min(0, 'El costo de mano de obra debe ser positivo'),
-  mileage: z.coerce.number().min(0, 'El kilometraje debe ser positivo'),
+  laborCost: z.number().min(0, 'El costo de mano de obra debe ser positivo'),
+  mileage: z.number().min(0, 'El kilometraje debe ser positivo'),
   technicianName: z.string().min(1, 'El nombre del técnico es requerido'),
   nextServiceDate: z.string().optional(),
-  nextServiceMileage: z.coerce.number().optional(),
+  nextServiceMileage: z.number().optional(),
   status: z.enum(['COMPLETED', 'PENDING', 'IN_PROGRESS', 'CANCELLED']),
   notes: z.string().optional(),
 })

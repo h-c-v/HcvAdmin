@@ -102,7 +102,7 @@ export function VehicleDetailSheet({
                 <div className='space-y-3'>
                   <div className='flex justify-between items-start'>
                     <div>
-                      <p className='font-medium'>{latestService.serviceType}</p>
+                      <p className='font-medium'>{latestService.serviceTypes?.join(', ') || 'Servicio'}</p>
                       <p className='text-sm text-muted-foreground'>
                         {format(new Date(latestService.serviceDate), 'dd MMM yyyy')}
                       </p>
@@ -113,7 +113,7 @@ export function VehicleDetailSheet({
                   </div>
                   <div className='flex justify-between'>
                     <span className='text-sm text-muted-foreground'>Costo</span>
-                    <span className='font-semibold'>${latestService.totalCost.toFixed(2)}</span>
+                    <span className='font-semibold'>${(latestService.totalCost ?? 0).toFixed(2)}</span>
                   </div>
                   <div className='flex justify-between'>
                     <span className='text-sm text-muted-foreground'>Técnico</span>
@@ -136,7 +136,7 @@ export function VehicleDetailSheet({
               <div className='rounded-lg border p-3'>
                 <p className='text-sm text-muted-foreground'>Total Gastado</p>
                 <p className='text-2xl font-bold'>
-                  ${services.reduce((sum, s) => sum + s.totalCost, 0).toFixed(0)}
+                  ${services.reduce((sum, s) => sum + (s.totalCost ?? 0), 0).toFixed(0)}
                 </p>
               </div>
             </div>

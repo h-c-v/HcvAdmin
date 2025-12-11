@@ -23,14 +23,12 @@ import {
 import { DataTablePagination, DataTableToolbar } from '@/components/data-table'
 import { clientsColumns } from './clients-columns'
 import { mockClients } from '@/data/mock-data'
-import { useNavigate } from '@tanstack/react-router'
 
 interface ClientsTableProps {
   customerId: string
 }
 
 export function ClientsTable({ customerId }: ClientsTableProps) {
-  const navigate = useNavigate()
   const [rowSelection, setRowSelection] = useState({})
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [sorting, setSorting] = useState<SortingState>([])
@@ -38,7 +36,7 @@ export function ClientsTable({ customerId }: ClientsTableProps) {
 
   // TODO: Fetch clients from GraphQL
   // const { data } = useQuery(GET_CLIENTS, { variables: { customerId } })
-  const data = mockClients.filter(c => c.customerId === customerId)
+  const data = mockClients.filter(c => c.id === customerId)
 
   const table = useReactTable({
     data,

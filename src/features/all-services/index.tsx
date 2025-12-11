@@ -285,7 +285,7 @@ export default function AllServicesPage() {
     .reduce((sum, s) => sum + calculateServiceTotalCost(s), 0)
 
   const completedServices = services.filter(s => s.status === 'COMPLETED').length
-  const pendingServices = services.filter(s => s.status === 'PENDING').length
+  // const pendingServices = services.filter(s => s.status === 'PENDING').length
   const inProgressServices = services.filter(s => s.status === 'IN_PROGRESS').length
 
   const table = useReactTable({

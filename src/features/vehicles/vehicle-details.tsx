@@ -83,7 +83,7 @@ export default function VehicleDetailsPage() {
               {getVehicleFullName(vehicle)}
             </h2>
             <p className='text-muted-foreground'>
-              VIN: {vehicle.vin}
+              Patente: {vehicle.license}
             </p>
           </div>
         </div>
@@ -142,10 +142,7 @@ export default function VehicleDetailsPage() {
                   {fuelTypeLabels[vehicle.fuelType]}
                 </Badge>
               </div>
-              <div>
-                <p className='text-sm font-medium text-muted-foreground'>VIN</p>
-                <p className='text-sm font-mono'>{vehicle.vin}</p>
-              </div>
+              {/* VIN no disponible en GraphQL */}
             </CardContent>
           </Card>
         </div>

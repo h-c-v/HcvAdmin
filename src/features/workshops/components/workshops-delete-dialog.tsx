@@ -27,7 +27,7 @@ export function WorkshopsDeleteDialog() {
           <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
           <AlertDialogDescription>
             Esta acción no se puede deshacer. Se eliminará permanentemente el
-            taller <strong>{currentWorkshop?.businessName}</strong> del sistema.
+            taller <strong>{currentWorkshop?.name}</strong> del sistema.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

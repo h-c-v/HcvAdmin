@@ -30,7 +30,7 @@ export function ProfileDropdown() {
 
   const userEmail = auth.user?.email || 'user@example.com'
   const user = auth.user
-  const userInitials = getInitials(user.names)
+  const userInitials = getInitials(user?.names || userEmail)
 
   return (
     <>
@@ -38,7 +38,7 @@ export function ProfileDropdown() {
         <DropdownMenuTrigger asChild>
           <Button variant='ghost' className='relative h-8 w-8 rounded-full'>
             <Avatar className='h-8 w-8'>
-              <AvatarImage src={user.logoUrl} alt={userEmail} />
+              <AvatarImage src={user?.logoUrl} alt={userEmail} />
               <AvatarFallback>{userInitials}</AvatarFallback>
             </Avatar>
           </Button>

@@ -9,6 +9,10 @@ interface AuthUser {
   email: string
   role: string[]
   exp: number
+  names?: string
+  lastName?: string
+  logo?: string
+  logoUrl?: string
 }
 
 interface AuthState {
