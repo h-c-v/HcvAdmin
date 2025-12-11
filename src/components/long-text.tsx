@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import {
   Popover,
@@ -23,12 +23,10 @@ export function LongText({
   className = '',
   contentClassName = '',
 }: LongTextProps) {
-  const ref = useRef<HTMLDivElement>(null)
   const [isOverflown, setIsOverflown] = useState(false)
 
   // Use ref callback to check overflow when element is mounted
   const refCallback = (node: HTMLDivElement | null) => {
-    ref.current = node
     if (node && checkOverflow(node)) {
       queueMicrotask(() => setIsOverflown(true))
     }

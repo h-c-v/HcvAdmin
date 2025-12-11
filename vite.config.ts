@@ -20,14 +20,30 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: ['@apollo/client', '@apollo/client/react'],
+    include: [
+      '@apollo/client',
+      '@apollo/client/react',
+      'react',
+      'react-dom',
+      '@tanstack/react-query',
+      'recharts',
+      'es-toolkit/compat'
+    ],
     esbuildOptions: {
       target: 'esnext',
     },
   },
   build: {
+    target: 'esnext',
     commonjsOptions: {
-      include: [/@apollo\/client/],
+      include: [/@apollo\/client/, /react/, /react-dom/, /@tanstack/, /es-toolkit/, /eventemitter3/],
+      transformMixedEsModules: true,
+    },
+    rollupOptions: {
+      external: [],
+      output: {
+        manualChunks: undefined,
+      },
     },
   },
 })
