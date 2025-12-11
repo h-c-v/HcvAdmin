@@ -3,6 +3,7 @@
   "outputDirectory": "dist",
   "framework": "vite",
   "installCommand": "pnpm install --shamefully-hoist",
+  "nodeVersion": "22.12.0",
   "rewrites": [
     {
       "source": "/(.*)",

@@ -106,18 +106,20 @@ export function TasksMutateDrawer({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Status</FormLabel>
-                  <SelectDropdown
-                    defaultValue={field.value}
-                    onValueChange={field.onChange}
-                    placeholder='Select dropdown'
-                    items={[
-                      { label: 'In Progress', value: 'in progress' },
-                      { label: 'Backlog', value: 'backlog' },
-                      { label: 'Todo', value: 'todo' },
-                      { label: 'Canceled', value: 'canceled' },
-                      { label: 'Done', value: 'done' },
-                    ]}
-                  />
+                  <FormControl>
+                    <SelectDropdown
+                      defaultValue={field.value}
+                      onValueChange={field.onChange}
+                      placeholder='Select dropdown'
+                      items={[
+                        { label: 'In Progress', value: 'in progress' },
+                        { label: 'Backlog', value: 'backlog' },
+                        { label: 'Todo', value: 'todo' },
+                        { label: 'Canceled', value: 'canceled' },
+                        { label: 'Done', value: 'done' },
+                      ]}
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
