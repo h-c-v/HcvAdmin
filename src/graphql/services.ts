@@ -73,6 +73,16 @@ export const GET_SERVICES = gql`
   }
 `
 
+// Query: Obtener servicios por vehículo (simple)
+export const GET_SERVICES_BY_VEHICLE = gql`
+  ${SERVICE_FRAGMENT}
+  query GetServicesByVehicle($vehicleId: ID!) {
+    servicesByVehicle(vehicleId: $vehicleId) {
+      ...ServiceFields
+    }
+  }
+`
+
 // Query: Obtener un servicio por ID
 export const GET_SERVICE = gql`
   ${SERVICE_FRAGMENT}
@@ -216,4 +226,8 @@ export interface GetServicesResponse {
 
 export interface GetAllServicesResponse {
   services: Service[]
+}
+
+export interface GetServicesByVehicleResponse {
+  servicesByVehicle: Service[]
 }

@@ -5,7 +5,9 @@ import { IconEdit, IconTrash, IconEye, IconTool } from '@tabler/icons-react'
 import { useServices } from './services-provider'
 import { serviceStatusLabels, serviceStatusColors } from '@/types'
 import { format } from 'date-fns'
-import { mockServices } from '@/data/mock-data'
+import { useQuery } from '@apollo/client/react'
+import { GET_SERVICES_BY_VEHICLE, type GetServicesByVehicleResponse } from '@/graphql/services'
+import { Loader2 } from 'lucide-react'
 
 interface ServicesTimelineProps {
   vehicleId: string
@@ -14,25 +16,59 @@ interface ServicesTimelineProps {
 export function ServicesTimeline({ vehicleId }: ServicesTimelineProps) {
   const { setOpen, setCurrentService } = useServices()
 
-  // TODO: Fetch services from GraphQL
-  const services = mockServices.filter(s => s.vehicleId === vehicleId)
+  // Fetch services from GraphQL
+  const { data, loading, error } = useQuery<GetServicesByVehicleResponse>(GET_SERVICES_BY_VEHICLE, {
+    variables: { vehicleId },
+  })
 
-  const handleViewDetail = (service: typeof mockServices[0]) => {
+  const services = data?.servicesByVehicle || []
+
+  // Sort services by creation date (most recent first)
+  const sortedServices = [...services].sort((a, b) => {
+    const dateA = new Date(a.createdAt).getTime()
+    const dateB = new Date(b.createdAt).getTime()
+
+    // Handle invalid dates
+    if (isNaN(dateA) && isNaN(dateB)) return 0
+    if (isNaN(dateA)) return 1
+    if (isNaN(dateB)) return -1
+
+    return dateB - dateA
+  })
+
+  const handleViewDetail = (service: typeof services[0]) => {
     setCurrentService(service)
     setOpen('view')
   }
 
-  const handleEdit = (service: typeof mockServices[0]) => {
+  const handleEdit = (service: typeof services[0]) => {
     setCurrentService(service)
     setOpen('update')
   }
 
-  const handleDelete = (service: typeof mockServices[0]) => {
+  const handleDelete = (service: typeof services[0]) => {
     setCurrentService(service)
     setOpen('delete')
   }
 
-  if (services.length === 0) {
+  if (loading) {
+    return (
+      <div className='flex items-center justify-center py-8'>
+        <Loader2 className='h-8 w-8 animate-spin text-muted-foreground' />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className='flex flex-col items-center justify-center py-8 text-center'>
+        <p className='text-sm text-destructive mb-2'>Error al cargar los servicios</p>
+        <p className='text-xs text-muted-foreground'>{error.message}</p>
+      </div>
+    )
+  }
+
+  if (sortedServices.length === 0) {
     return (
       <div className='flex flex-col items-center justify-center py-8 text-center'>
         <IconTool className='h-12 w-12 text-muted-foreground mb-4' />
@@ -49,7 +85,7 @@ export function ServicesTimeline({ vehicleId }: ServicesTimelineProps) {
       {/* Timeline line */}
       <div className='absolute left-[1.5rem] top-0 bottom-0 w-0.5 bg-border' />
 
-      {services.map((service) => (
+      {sortedServices.map((service) => (
         <div key={service.id} className='relative flex gap-4'>
           {/* Timeline dot */}
           <div className='relative z-10'>
@@ -65,12 +101,14 @@ export function ServicesTimeline({ vehicleId }: ServicesTimelineProps) {
                 <div className='flex-1'>
                   <div className='flex items-center gap-2 mb-1'>
                     <h3 className='font-semibold text-lg'>{service.serviceTypes?.join(', ') || 'Servicio'}</h3>
-                    <Badge variant={serviceStatusColors[service.status]}>
-                      {serviceStatusLabels[service.status]}
+                    <Badge variant={serviceStatusColors[service.status as keyof typeof serviceStatusColors]}>
+                      {serviceStatusLabels[service.status as keyof typeof serviceStatusLabels]}
                     </Badge>
                   </div>
                   <p className='text-sm text-muted-foreground'>
-                    {format(new Date(service.serviceDate), 'dd MMM yyyy')} • {service.mileage.toLocaleString()} km
+                    {service.serviceDate && !isNaN(new Date(service.serviceDate).getTime())
+                      ? format(new Date(service.serviceDate), 'dd MMM yyyy')
+                      : 'Fecha no disponible'} • {service.mileage.toLocaleString()} km
                   </p>
                 </div>
                 <div className='flex gap-1'>
@@ -107,11 +145,13 @@ export function ServicesTimeline({ vehicleId }: ServicesTimelineProps) {
                   <span className='font-medium'>{service.technicianName}</span>
                 </div>
                 <div className='text-right'>
-                  <p className='text-lg font-bold'>${(service.totalCost ?? 0).toFixed(2)}</p>
+                  <p className='text-lg font-bold'>
+                    ${(service.laborCost + (service.parts?.reduce((sum: number, part: { quantity: number; unitPrice: number }) => sum + (part.quantity * part.unitPrice), 0) || 0)).toFixed(2)}
+                  </p>
                 </div>
               </div>
 
-              {service.parts.length > 0 && (
+              {service.parts && service.parts.length > 0 && (
                 <div className='mt-3 pt-3 border-t'>
                   <p className='text-xs text-muted-foreground mb-1'>
                     {service.parts.length} repuesto{service.parts.length !== 1 ? 's' : ''} utilizado{service.parts.length !== 1 ? 's' : ''}
@@ -119,7 +159,7 @@ export function ServicesTimeline({ vehicleId }: ServicesTimelineProps) {
                 </div>
               )}
 
-              {service.nextServiceDate && (
+              {service.nextServiceDate && !isNaN(new Date(service.nextServiceDate).getTime()) && (
                 <div className='mt-3 pt-3 border-t'>
                   <p className='text-xs text-muted-foreground'>
                     Próximo servicio: {format(new Date(service.nextServiceDate), 'dd MMM yyyy')}

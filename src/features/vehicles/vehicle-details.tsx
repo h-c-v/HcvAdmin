@@ -7,11 +7,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { IconArrowLeft, IconEdit, IconPlus } from '@tabler/icons-react'
 import { useNavigate, useParams } from '@tanstack/react-router'
-import { getVehicleFullName, vehicleTypeLabels, fuelTypeLabels } from '@/types'
+import { vehicleTypeLabels } from '@/types'
 import { ServicesProvider, useServices } from '../services/components/services-provider'
 import { ServicesTimeline } from '../services/components/services-timeline'
 import { ServicesDialogs } from '../services/components/services-dialogs'
-import { mockVehicles } from '@/data/mock-data'
+import { useQuery } from '@apollo/client/react'
+import { GET_VEHICLE, type GetVehicleResponse } from '@/graphql/vehicles'
+import { Loader2 } from 'lucide-react'
 
 function ServicesNewButton() {
   const { setOpen, setCurrentService } = useServices()
@@ -33,10 +35,30 @@ export default function VehicleDetailsPage() {
   const navigate = useNavigate()
   const { vehicleId } = useParams({ from: '/_authenticated/vehicles/$vehicleId' })
 
-  // TODO: Fetch vehicle data using GraphQL
-  const vehicle = mockVehicles.find(v => v.id === vehicleId)
+  // Fetch vehicle data using GraphQL
+  const { data, loading, error } = useQuery<GetVehicleResponse>(GET_VEHICLE, {
+    variables: { id: vehicleId },
+  })
 
-  if (!vehicle) {
+  const vehicle = data?.vehicle
+
+  if (loading) {
+    return (
+      <>
+        <Header fixed>
+          <div className='ms-auto flex items-center space-x-4'>
+            <ConfigDrawer />
+            <ProfileDropdown />
+          </div>
+        </Header>
+        <Main className='flex flex-1 items-center justify-center'>
+          <Loader2 className='h-8 w-8 animate-spin text-muted-foreground' />
+        </Main>
+      </>
+    )
+  }
+
+  if (error || !vehicle) {
     return (
       <>
         <Header fixed>
@@ -49,7 +71,9 @@ export default function VehicleDetailsPage() {
           <div className='flex items-center justify-center h-64'>
             <div className='text-center'>
               <h2 className='text-2xl font-bold mb-2'>Vehículo no encontrado</h2>
-              <p className='text-muted-foreground mb-4'>El vehículo que buscas no existe.</p>
+              <p className='text-muted-foreground mb-4'>
+                {error ? `Error: ${error.message}` : 'El vehículo que buscas no existe.'}
+              </p>
               <Button onClick={() => navigate({ to: '/all-vehicles' })}>
                 Volver a Vehículos
               </Button>
@@ -74,13 +98,13 @@ export default function VehicleDetailsPage() {
           <Button
             variant='ghost'
             size='icon'
-            onClick={() => navigate({ to: '/' })}
+            onClick={() => navigate({ to: '/all-vehicles' })}
           >
             <IconArrowLeft className='h-5 w-5' />
           </Button>
           <div className='flex-1'>
             <h2 className='text-2xl font-bold tracking-tight'>
-              {getVehicleFullName(vehicle)}
+              {vehicle.vehicleBrand.name} {vehicle.vehicleModel.name} {vehicle.year}
             </h2>
             <p className='text-muted-foreground'>
               Patente: {vehicle.license}
@@ -98,11 +122,11 @@ export default function VehicleDetailsPage() {
               <div className='grid grid-cols-2 gap-4'>
                 <div>
                   <p className='text-sm font-medium text-muted-foreground'>Marca</p>
-                  <p className='text-base'>{vehicle.brand}</p>
+                  <p className='text-base'>{vehicle.vehicleBrand.name}</p>
                 </div>
                 <div>
                   <p className='text-sm font-medium text-muted-foreground'>Modelo</p>
-                  <p className='text-base'>{vehicle.model}</p>
+                  <p className='text-base'>{vehicle.vehicleModel.name}</p>
                 </div>
                 <div>
                   <p className='text-sm font-medium text-muted-foreground'>Año</p>
@@ -113,12 +137,8 @@ export default function VehicleDetailsPage() {
                   <p className='text-base font-semibold'>{vehicle.license}</p>
                 </div>
                 <div>
-                  <p className='text-sm font-medium text-muted-foreground'>Color</p>
-                  <p className='text-base'>{vehicle.color}</p>
-                </div>
-                <div>
                   <p className='text-sm font-medium text-muted-foreground'>Kilometraje</p>
-                  <p className='text-base'>{vehicle.currentMileage.toLocaleString()} km</p>
+                  <p className='text-base'>{vehicle.mileage.toLocaleString()} km</p>
                 </div>
               </div>
             </CardContent>
@@ -133,16 +153,15 @@ export default function VehicleDetailsPage() {
               <div>
                 <p className='text-sm font-medium text-muted-foreground'>Tipo de Vehículo</p>
                 <Badge variant='outline' className='mt-1'>
-                  {vehicleTypeLabels[vehicle.vehicleType]}
+                  {vehicleTypeLabels[vehicle.vehicleType as keyof typeof vehicleTypeLabels] || vehicle.vehicleType}
                 </Badge>
               </div>
               <div>
                 <p className='text-sm font-medium text-muted-foreground'>Tipo de Combustible</p>
                 <Badge variant='outline' className='mt-1'>
-                  {fuelTypeLabels[vehicle.fuelType]}
+                  {vehicle.gasolineType}
                 </Badge>
               </div>
-              {/* VIN no disponible en GraphQL */}
             </CardContent>
           </Card>
         </div>

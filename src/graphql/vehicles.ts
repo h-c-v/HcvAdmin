@@ -142,6 +142,10 @@ export interface GetVehiclesResponse {
   vehicles: Vehicle[]
 }
 
+export interface GetVehicleResponse {
+  vehicle: Vehicle
+}
+
 // Mutation: Actualizar vehículo
 export const UPDATE_VEHICLE = gql`
   ${VEHICLE_FRAGMENT}

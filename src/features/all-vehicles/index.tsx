@@ -3,7 +3,6 @@ import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { ConfigDrawer } from '@/components/config-drawer'
-import { VehicleDetailSheet } from '@/features/vehicles/components/vehicle-detail-sheet'
 import { VehiclesProvider } from '@/features/vehicles/components/vehicles-provider'
 import { VehiclesDialogs } from '@/features/vehicles/components/vehicles-dialogs'
 import { Button } from '@/components/ui/button'
@@ -16,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useState } from 'react'
+import { useNavigate } from '@tanstack/react-router'
 import {
   type SortingState,
   type VisibilityState,
@@ -177,8 +177,12 @@ const columns: ColumnDef<Vehicle>[] = [
 ]
 
 function VehicleActionsCell({ vehicle }: { vehicle: Vehicle }) {
-  const [sheetOpen, setSheetOpen] = useState(false)
+  const navigate = useNavigate()
   const { setOpen, setCurrentVehicle } = useVehicles()
+
+  const handleViewDetails = () => {
+    navigate({ to: '/vehicles/$vehicleId', params: { vehicleId: vehicle.id } })
+  }
 
   const handleEdit = () => {
     setCurrentVehicle(vehicle)
@@ -191,39 +195,32 @@ function VehicleActionsCell({ vehicle }: { vehicle: Vehicle }) {
   }
 
   return (
-    <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant='ghost'
-            className='flex h-8 w-8 p-0 data-[state=open]:bg-muted'
-          >
-            <IconDotsVertical className='h-4 w-4' />
-            <span className='sr-only'>Abrir menú</span>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align='end' className='w-[160px]'>
-          <DropdownMenuItem onClick={() => setSheetOpen(true)}>
-            <IconEye className='me-2 h-4 w-4' />
-            Ver detalles
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleEdit}>
-            <IconEdit className='me-2 h-4 w-4' />
-            Editar
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleDelete} className='text-destructive'>
-            <IconTrash className='me-2 h-4 w-4' />
-            Eliminar
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-      <VehicleDetailSheet
-        vehicleId={vehicle.id}
-        open={sheetOpen}
-        onOpenChange={setSheetOpen}
-      />
-    </>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant='ghost'
+          className='flex h-8 w-8 p-0 data-[state=open]:bg-muted'
+        >
+          <IconDotsVertical className='h-4 w-4' />
+          <span className='sr-only'>Abrir menú</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align='end' className='w-[160px]'>
+        <DropdownMenuItem onClick={handleViewDetails}>
+          <IconEye className='me-2 h-4 w-4' />
+          Ver detalles
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleEdit}>
+          <IconEdit className='me-2 h-4 w-4' />
+          Editar
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={handleDelete} className='text-destructive'>
+          <IconTrash className='me-2 h-4 w-4' />
+          Eliminar
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }
 
